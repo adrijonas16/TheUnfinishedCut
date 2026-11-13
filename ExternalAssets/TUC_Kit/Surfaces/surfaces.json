@@ -1,0 +1,143 @@
+{
+ "M_Asphalt": {
+  "source": "ambientCG Asphalt031 (CC0)",
+  "tint": [
+   0.42,
+   0.42,
+   0.44
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_Asphalt_BaseColor.jpg",
+   "Normal": "M_Asphalt_Normal.jpg",
+   "Roughness": "M_Asphalt_Roughness.jpg",
+   "AO": "M_Asphalt_AO.jpg"
+  }
+ },
+ "M_Sidewalk": {
+  "source": "ambientCG PavingStones142 (CC0)",
+  "tint": [
+   0.9,
+   0.9,
+   0.9
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_Sidewalk_BaseColor.jpg",
+   "Normal": "M_Sidewalk_Normal.jpg",
+   "Roughness": "M_Sidewalk_Roughness.jpg",
+   "AO": "M_Sidewalk_AO.jpg"
+  }
+ },
+ "M_Carpet": {
+  "source": "ambientCG Fabric026 (CC0)",
+  "tint": [
+   0.85,
+   0.75,
+   0.75
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_Carpet_BaseColor.jpg",
+   "Normal": "M_Carpet_Normal.jpg",
+   "Roughness": "M_Carpet_Roughness.jpg"
+  }
+ },
+ "M_Checker": {
+  "source": "ambientCG Tiles139 (CC0)",
+  "tint": [
+   1,
+   1,
+   1
+  ],
+  "roughness_mul": 0.8,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_Checker_BaseColor.jpg",
+   "Normal": "M_Checker_Normal.jpg",
+   "Roughness": "M_Checker_Roughness.jpg"
+  }
+ },
+ "M_MetalPanel": {
+  "source": "ambientCG Tiles140 (CC0)",
+  "tint": [
+   0.9,
+   0.95,
+   1.05
+  ],
+  "roughness_mul": 0.9,
+  "metallic": 0.35,
+  "textures": {
+   "BaseColor": "M_MetalPanel_BaseColor.jpg",
+   "Normal": "M_MetalPanel_Normal.jpg",
+   "Roughness": "M_MetalPanel_Roughness.jpg"
+  }
+ },
+ "M_StoneTile": {
+  "source": "ambientCG PavingStones138 (CC0)",
+  "tint": [
+   0.85,
+   0.85,
+   0.85
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_StoneTile_BaseColor.jpg",
+   "Normal": "M_StoneTile_Normal.jpg",
+   "Roughness": "M_StoneTile_Roughness.jpg",
+   "AO": "M_StoneTile_AO.jpg"
+  }
+ },
+ "M_Brick": {
+  "source": "ambientCG Bricks105 (CC0)",
+  "tint": [
+   0.95,
+   0.72,
+   0.62
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_Brick_BaseColor.jpg",
+   "Normal": "M_Brick_Normal.jpg",
+   "Roughness": "M_Brick_Roughness.jpg",
+   "AO": "M_Brick_AO.jpg"
+  }
+ },
+ "M_CinemaPanel": {
+  "source": "ambientCG Carpet012 (CC0)",
+  "tint": [
+   1.0,
+   0.8,
+   0.9
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_CinemaPanel_BaseColor.jpg",
+   "Normal": "M_CinemaPanel_Normal.jpg",
+   "Roughness": "M_CinemaPanel_Roughness.jpg",
+   "AO": "M_CinemaPanel_AO.jpg"
+  }
+ },
+ "M_StoneBlock": {
+  "source": "ambientCG Bricks108A (CC0)",
+  "tint": [
+   0.8,
+   0.8,
+   0.85
+  ],
+  "roughness_mul": 1.0,
+  "metallic": 0.0,
+  "textures": {
+   "BaseColor": "M_StoneBlock_BaseColor.jpg",
+   "Normal": "M_StoneBlock_Normal.jpg",
+   "Roughness": "M_StoneBlock_Roughness.jpg",
+   "AO": "M_StoneBlock_AO.jpg"
+  }
+ }
+}

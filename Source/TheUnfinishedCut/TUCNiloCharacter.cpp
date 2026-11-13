@@ -16,6 +16,7 @@ namespace
 {
     const TCHAR* AnimatedCatPackage = TEXT("/Game/TUC/Characters/Nilo/SK_Nilo");
     const TCHAR* AnimatedCatWalkPackage = TEXT("/Game/TUC/Characters/Nilo/A_Nilo_Walk");
+    const TCHAR* AnimatedCatFolder = TEXT("/Game/TUC/Characters/Nilo");
     const TCHAR* ImportedCatPackage = TEXT("/Game/TUC/Characters/Nilo/SM_Nilo_Base_Optimized");
     const TCHAR* SphereShape = TEXT("/Engine/BasicShapes/Sphere.Sphere");
     const TCHAR* ConeShape = TEXT("/Engine/BasicShapes/Cone.Cone");
@@ -125,9 +126,23 @@ bool ATUCNiloCharacter::TryUseAnimatedCat()
     USkeletalMesh* CatSkeletal = TUCAssets::LoadAsset<USkeletalMesh>(AnimatedCatPackage);
     if (!CatSkeletal)
     {
+        CatSkeletal = TUCAssets::FindFirstAsset<USkeletalMesh>(AnimatedCatFolder);
+    }
+    if (!CatSkeletal)
+    {
         return false;
     }
     WalkAnim = TUCAssets::LoadAsset<UAnimSequence>(AnimatedCatWalkPackage);
+    if (!WalkAnim)
+    {
+        WalkAnim = TUCAssets::FindFirstAsset<UAnimSequence>(AnimatedCatFolder);
+    }
+    if (WalkAnim && WalkAnim->GetSkeleton() != CatSkeletal->GetSkeleton())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("TUC: la animación %s no usa el esqueleto de %s"), *WalkAnim->GetName(), *CatSkeletal->GetName());
+        WalkAnim = nullptr;
+    }
+    UE_LOG(LogTemp, Log, TEXT("TUC: Nilo animado = %s, caminar = %s"), *CatSkeletal->GetName(), WalkAnim ? *WalkAnim->GetName() : TEXT("(ninguna)"));
 
     // 70 cm de largo, patas en la base de la cápsula, girado para mirar a +X (modelos Meshy miran a +Y).
     const FBoxSphereBounds Bounds = CatSkeletal->GetBounds();
@@ -149,6 +164,11 @@ bool ATUCNiloCharacter::TryUseAnimatedCat()
     AnimatedCat->SetAnimationMode(EAnimationMode::AnimationSingleNode);
     AnimatedCat->SetVisibility(true);
     CatMesh->SetVisibility(false);
+    if (!WalkAnim)
+    {
+        // Sin animación importada: al menos balanceo al caminar.
+        SetBobComponent(AnimatedCat, 2.0f, 15.0f);
+    }
     UpdateCatAnimation();
     return true;
 }

@@ -2,6 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Misc/PackageName.h"
+#include "AssetRegistry/AssetData.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Modules/ModuleManager.h"
 
 class UMaterialInstanceDynamic;
 class UStaticMesh;
@@ -38,6 +41,26 @@ namespace TUCAssets
         }
         const FString ObjectPath = FString(PackagePath) + TEXT(".") + FPackageName::GetShortName(PackagePath);
         return LoadObject<T>(nullptr, *ObjectPath);
+    }
+
+    /**
+     * Primer asset de tipo T dentro de una carpeta (/Game/TUC/Characters/Nilo), por si la importación
+     * le dio otro nombre (p. ej. la animación de caminar de Meshy).
+     */
+    template <typename T>
+    T* FindFirstAsset(const TCHAR* FolderPath)
+    {
+        FAssetRegistryModule& Registry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+        TArray<FAssetData> Assets;
+        Registry.Get().GetAssetsByPath(FName(FolderPath), Assets, true);
+        for (const FAssetData& Data : Assets)
+        {
+            if (T* Asset = Cast<T>(Data.GetAsset()))
+            {
+                return Asset;
+            }
+        }
+        return nullptr;
     }
 
     /** Tiñe el slot M_AccentGlow (parámetro Tint del material maestro). Devuelve el MID o nullptr. */

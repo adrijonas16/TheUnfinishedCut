@@ -93,13 +93,13 @@ protected:
 
     /** Malla visual que se balancea al caminar (las mallas del kit no tienen rig ni animaciones). */
     UPROPERTY()
-    TObjectPtr<UStaticMeshComponent> BobComponent;
+    TObjectPtr<USceneComponent> BobComponent;
 
     float BobBaseZ = 0.0f;
     float BobAmplitude = 2.5f;
     float BobRate = 11.0f;
 
-    void SetBobComponent(UStaticMeshComponent* Component, float Amplitude, float Rate);
+    void SetBobComponent(USceneComponent* Component, float Amplitude, float Rate);
 
 private:
     float FallCheckCooldown = 0.0f;

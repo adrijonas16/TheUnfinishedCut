@@ -63,7 +63,7 @@ void ATUCCharacterBase::TintPart(UStaticMeshComponent* Part, const FLinearColor&
     }
 }
 
-void ATUCCharacterBase::SetBobComponent(UStaticMeshComponent* Component, float Amplitude, float Rate)
+void ATUCCharacterBase::SetBobComponent(USceneComponent* Component, float Amplitude, float Rate)
 {
     BobComponent = Component;
     BobAmplitude = Amplitude;

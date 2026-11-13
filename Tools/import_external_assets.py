@@ -24,6 +24,18 @@ MEL = unreal.MaterialEditingLibrary
 
 KIT_DIR = PROJECT_DIR / "ExternalAssets" / "TUC_Kit"
 KIT_ROOT = "/Game/TUC/Kit"
+SURF_DIR = KIT_DIR / "Surfaces"
+
+# Debe coincidir con IMPORT_VERSION de Content/Python/init_unreal.py.
+IMPORT_VERSION = "3"
+
+# UE 5.5+ importa FBX con Interchange, que ignora las opciones FbxImportUI (escala, esqueleto,
+# animaciones, materiales). Forzar el importador FBX clásico para que todo salga igual en 5.1–5.7.
+for _cvar in ("Interchange.FeatureFlags.Import.FBX 0", "Interchange.FeatureFlags.Import.FBX.ToLevel 0"):
+    try:
+        unreal.SystemLibrary.execute_console_command(None, _cvar)
+    except Exception:
+        pass
 
 # Los mapas normales de Meshy usan convención OpenGL (+Y). Unreal usa DirectX (-Y).
 FLIP_NORMAL_GREEN = True
@@ -185,13 +197,96 @@ def build_master_material(white_texture):
     return material
 
 
-def build_material_instance(name, spec, master, textures):
+def build_surface_master(defaults):
+    """Material PBR para pisos y paredes: color * tinte, normal, rugosidad, AO (texturas ambientCG CC0)."""
+    path = f"{KIT_ROOT}/Materials/M_TUC_Surface"
+    if EAL.does_asset_exist(path):
+        EAL.delete_asset(path)
+    material = ASSET_TOOLS.create_asset("M_TUC_Surface", f"{KIT_ROOT}/Materials", unreal.Material, unreal.MaterialFactoryNew())
+
+    def param(name, texture, sampler, x, y):
+        node = MEL.create_material_expression(material, unreal.MaterialExpressionTextureSampleParameter2D, x, y)
+        node.set_editor_property("parameter_name", name)
+        node.set_editor_property("texture", texture)
+        node.set_editor_property("sampler_type", sampler)
+        return node
+
+    base = param("BaseTex", defaults["BaseColor"], unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, -900, -300)
+    tint = MEL.create_material_expression(material, unreal.MaterialExpressionVectorParameter, -900, -100)
+    tint.set_editor_property("parameter_name", "Tint")
+    tint.set_editor_property("default_value", unreal.LinearColor(1.0, 1.0, 1.0, 1.0))
+    color = MEL.create_material_expression(material, unreal.MaterialExpressionMultiply, -550, -250)
+    MEL.connect_material_expressions(base, "RGB", color, "A")
+    MEL.connect_material_expressions(tint, "", color, "B")
+    MEL.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+
+    normal = param("NormalTex", defaults["Normal"], unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, -900, 100)
+    MEL.connect_material_property(normal, "RGB", unreal.MaterialProperty.MP_NORMAL)
+
+    rough = param("RoughTex", defaults["Roughness"], unreal.MaterialSamplerType.SAMPLERTYPE_MASKS, -900, 400)
+    rough_mul = MEL.create_material_expression(material, unreal.MaterialExpressionScalarParameter, -900, 650)
+    rough_mul.set_editor_property("parameter_name", "RoughnessMul")
+    rough_mul.set_editor_property("default_value", 1.0)
+    rough_out = MEL.create_material_expression(material, unreal.MaterialExpressionMultiply, -550, 450)
+    MEL.connect_material_expressions(rough, "R", rough_out, "A")
+    MEL.connect_material_expressions(rough_mul, "", rough_out, "B")
+    MEL.connect_material_property(rough_out, "", unreal.MaterialProperty.MP_ROUGHNESS)
+
+    metallic = MEL.create_material_expression(material, unreal.MaterialExpressionScalarParameter, -550, 750)
+    metallic.set_editor_property("parameter_name", "Metallic")
+    metallic.set_editor_property("default_value", 0.0)
+    MEL.connect_material_property(metallic, "", unreal.MaterialProperty.MP_METALLIC)
+
+    ao = param("AOTex", defaults.get("AO") or defaults["Roughness"], unreal.MaterialSamplerType.SAMPLERTYPE_MASKS, -900, 900)
+    MEL.connect_material_property(ao, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
+
+    MEL.recompile_material(material)
+    EAL.save_loaded_asset(material)
+    return material
+
+
+def import_surfaces():
+    """Devuelve {M_nombre: (spec, {BaseColor: Texture2D, ...})} con las texturas PBR reales de pisos y paredes."""
+    listing = SURF_DIR / "surfaces.json"
+    if not listing.exists():
+        return {}
+    kinds = {"BaseColor": "color", "Normal": "normal", "Roughness": "mask", "AO": "mask"}
+    result = {}
+    for name, spec in json.loads(listing.read_text(encoding="utf-8")).items():
+        textures = {}
+        for label, filename in spec.get("textures", {}).items():
+            texture = import_texture(SURF_DIR / filename, f"{KIT_ROOT}/Surfaces", kinds.get(label, "color"))
+            if texture:
+                textures[label] = texture
+        if "BaseColor" in textures and "Normal" in textures and "Roughness" in textures:
+            result[name] = (spec, textures)
+        else:
+            unreal.log_warning(f"TUC: superficie {name} incompleta, se usa la textura del kit")
+    log(f"{len(result)} superficies PBR (pisos/paredes) importadas")
+    return result
+
+
+def build_material_instance(name, spec, master, textures, surfaces=None, surface_master=None):
     path = f"{KIT_ROOT}/Materials/MI_{name}"
     if EAL.does_asset_exist(path):
         instance = EAL.load_asset(path)
     else:
         instance = ASSET_TOOLS.create_asset(f"MI_{name}", f"{KIT_ROOT}/Materials", unreal.MaterialInstanceConstant,
                                             unreal.MaterialInstanceConstantFactoryNew())
+    if surfaces and surface_master and name in surfaces:
+        surface_spec, surface_tex = surfaces[name]
+        MEL.set_material_instance_parent(instance, surface_master)
+        r, g, b = surface_spec.get("tint", [1.0, 1.0, 1.0])
+        MEL.set_material_instance_vector_parameter_value(instance, "Tint", unreal.LinearColor(r, g, b, 1.0))
+        MEL.set_material_instance_scalar_parameter_value(instance, "RoughnessMul", float(surface_spec.get("roughness_mul", 1.0)))
+        MEL.set_material_instance_scalar_parameter_value(instance, "Metallic", float(surface_spec.get("metallic", 0.0)))
+        MEL.set_material_instance_texture_parameter_value(instance, "BaseTex", surface_tex["BaseColor"])
+        MEL.set_material_instance_texture_parameter_value(instance, "NormalTex", surface_tex["Normal"])
+        MEL.set_material_instance_texture_parameter_value(instance, "RoughTex", surface_tex["Roughness"])
+        MEL.set_material_instance_texture_parameter_value(instance, "AOTex", surface_tex.get("AO", surface_tex["Roughness"]))
+        EAL.save_loaded_asset(instance)
+        return instance
+
     MEL.set_material_instance_parent(instance, master)
     r, g, b = spec["color"]
     MEL.set_material_instance_vector_parameter_value(instance, "Tint", unreal.LinearColor(r, g, b, 1.0))
@@ -220,7 +315,10 @@ def import_kit():
             textures[png.stem] = texture
 
     master = build_master_material(textures.get("T_White"))
-    materials = {name: build_material_instance(name, spec, master, textures) for name, spec in manifest["materials"].items()}
+    surfaces = import_surfaces()
+    surface_master = build_surface_master(next(iter(surfaces.values()))[1]) if surfaces else None
+    materials = {name: build_material_instance(name, spec, master, textures, surfaces, surface_master)
+                 for name, spec in manifest["materials"].items()}
     log(f"{len(materials)} instancias de material listas")
 
     ok = 0
@@ -416,29 +514,66 @@ def import_nilo():
     if not files:
         return True
     log(f"importando Nilo animado: {files[0].name}")
+    # Borrar la importación anterior (podía quedar sin textura o sin animación enlazada).
+    for old in ("SK_Nilo", "A_Nilo_Walk", "SK_Nilo_Skeleton", "SK_Nilo_PhysicsAsset", "M_Nilo_PBR"):
+        if EAL.does_asset_exist(f"{NILO_DEST}/{old}"):
+            EAL.delete_asset(f"{NILO_DEST}/{old}")
     ui = fbx_skeletal_options()
-    # El FBX trae las texturas incrustadas y está en una escala diminuta.
-    ui.set_editor_property("import_materials", True)
-    ui.set_editor_property("import_textures", True)
+    # El FBX de Meshy está en una escala diminuta; el C++ lo ajusta a 70 cm de todos modos.
     ui.get_editor_property("skeletal_mesh_import_data").set_editor_property("import_uniform_scale", 100.0)
     ui.get_editor_property("anim_sequence_import_data").set_editor_property("import_uniform_scale", 100.0)
     before = {p.split(".")[0] for p in EAL.list_assets(NILO_DEST, recursive=False, include_folder=False)} if EAL.does_directory_exist(NILO_DEST) else set()
     run_import(files[0], NILO_DEST, ui, "SK_Nilo")
-    for path in EAL.list_assets(NILO_DEST, recursive=False, include_folder=False):
+
+    skeletal = None
+    anims = []
+    for path in EAL.list_assets(NILO_DEST, recursive=True, include_folder=False):
         current = path.split(".")[0]
+        if current in before and current != f"{NILO_DEST}/SK_Nilo":
+            continue
         asset = EAL.load_asset(path)
-        if isinstance(asset, unreal.SkeletalMesh) and current != f"{NILO_DEST}/SK_Nilo" and current not in before:
-            EAL.rename_asset(current, f"{NILO_DEST}/SK_Nilo")
-        elif isinstance(asset, unreal.AnimSequence) and not EAL.does_asset_exist(f"{NILO_DEST}/A_Nilo_Walk"):
-            EAL.rename_asset(current, f"{NILO_DEST}/A_Nilo_Walk")
+        if isinstance(asset, unreal.SkeletalMesh):
+            if current != f"{NILO_DEST}/SK_Nilo":
+                EAL.rename_asset(current, f"{NILO_DEST}/SK_Nilo")
+            skeletal = EAL.load_asset(f"{NILO_DEST}/SK_Nilo")
+        elif isinstance(asset, unreal.AnimSequence):
+            anims.append(current)
+    if anims and not EAL.does_asset_exist(f"{NILO_DEST}/A_Nilo_Walk"):
+        # La toma más larga es el ciclo de caminar.
+        def length(path):
+            try:
+                return float(EAL.load_asset(path).get_play_length())
+            except Exception:
+                return 0.0
+        anims.sort(key=length, reverse=True)
+        EAL.rename_asset(anims[0], f"{NILO_DEST}/A_Nilo_Walk")
+
+    # Textura del gato: viene incrustada en el FBX; la extrajimos a T_Nilo_BaseColor.png.
+    if skeletal is not None:
+        base = import_texture(NILO_FBX / "T_Nilo_BaseColor.png", f"{NILO_DEST}/Textures")
+        if base:
+            material = build_pbr_material(NILO_DEST, "M_Nilo_PBR", {"base": base})
+            slots = skeletal.get_editor_property("materials")
+            for slot in slots:
+                slot.set_editor_property("material_interface", material)
+            skeletal.set_editor_property("materials", slots)
+            EAL.save_loaded_asset(skeletal)
+
     ready = EAL.does_asset_exist(f"{NILO_DEST}/SK_Nilo") and EAL.does_asset_exist(f"{NILO_DEST}/A_Nilo_Walk")
-    log(f"Nilo animado listo: {ready}")
+    log(f"Nilo animado listo: {ready} (animaciones encontradas: {len(anims)})")
     return ready
 
 
 # ───────────────────────── ejecución ─────────────────────────
 results = [import_kit(), import_overrides()] + [import_meshy(spec) for spec in MESHY_ASSETS] + [import_ivo(), import_nilo()]
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
+
+try:
+    marker = PROJECT_DIR / "Saved" / "TUC_ImportVersion.txt"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(IMPORT_VERSION, encoding="utf-8")
+except Exception as error:
+    unreal.log_warning(f"TUC: no se pudo guardar la versión de importación: {error}")
 
 if all(results):
     log("importación terminada. Presiona Play.")

@@ -21,3 +21,5 @@ ExternalAssets/Meshy/Community/*
 ExternalAssets/Meshy/Nilo_Base/
 ExternalAssets/Meshy/Retro_Projector/
 ExternalAssets/Meshy/Ivo_Animated/*.zip
+__pycache__/
+*.pyc

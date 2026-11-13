@@ -83,3 +83,14 @@ HUD:
 ## 0.1.0 — núcleo
 
 - Proyecto C++ y blockout inicial.
+
+## 1.5 — interfaz y superficies (13 nov 2026)
+- Menú principal real (Continuar / Nueva partida / Cómo jugar / Salir) con ratón, teclado y mando.
+- Pantalla "Cómo jugar", prólogo con botón Empezar y menú de pausa (seguir, cómo jugar, reiniciar, menú, salir).
+- Texto nítido y grande (fuentes Slate escaladas a la resolución) en todo el HUD.
+- Tarjeta de objetivo con DÓNDE está, QUIÉN lo hace y aviso "pulsa TAB" si estás con el personaje equivocado.
+- Marcador de objetivo más grande con flecha "GIRA" cuando queda fuera de pantalla; tutorial al empezar.
+- Pisos y paredes con texturas PBR reales (ambientCG CC0: color, normal, rugosidad, AO).
+- Nilo: textura extraída del FBX de Meshy y material propio; búsqueda robusta de la animación de caminar.
+- Importación con el importador FBX clásico también en UE 5.5+ (Interchange ignoraba escala/esqueleto/animación).
+- La importación se repite sola al abrir el editor si cambió su versión (tras un `git pull`).

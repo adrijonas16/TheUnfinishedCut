@@ -287,6 +287,26 @@ FText ATUCPuzzleDirector::GetCurrentObjective() const
     }
 }
 
+FText ATUCPuzzleDirector::GetObjectiveDetail() const
+{
+    switch (ProgressStep)
+    {
+        case 0: return FText::FromString(TEXT("Camina hacia el cine (al frente). La consola de energía brilla en celeste en la pared IZQUIERDA del vestíbulo. Acércate y pulsa E."));
+        case 1: return FText::FromString(TEXT("Ivo es muy grande para la rejilla. Pulsa TAB para jugar con Nilo: la rejilla verde está abajo en la pared DERECHA, más al fondo."));
+        case 2: return FText::FromString(TEXT("Pulsa TAB para volver a Ivo. El proyector violeta está al fondo del vestíbulo, frente a la pantalla. Evita la luz roja del centinela."));
+        case 3: return FText::FromString(TEXT("Estás en la película de los 80. Con Nilo (TAB), busca el soporte con el rollo verde a la DERECHA de la sala."));
+        case 4: return FText::FromString(TEXT("Con Ivo (TAB), sube a la tarima del fondo y usa el proyector violeta."));
+        case 5: return FText::FromString(TEXT("Ciudad del futuro. Con Ivo, el terminal celeste está en la pared IZQUIERDA nada más entrar."));
+        case 6: return FText::FromString(TEXT("Con Nilo (TAB), la compuerta verde del ducto está abajo en la pared DERECHA, más adelante."));
+        case 7: return FText::FromString(TEXT("Con Ivo (TAB), el proyector violeta está al fondo del pasillo. No dejes que el centinela te vea."));
+        case 8: return FText::FromString(TEXT("Último capítulo. El núcleo blanco brilla en el centro de la sala. Cualquiera de los dos puede activarlo."));
+        case 9: return MemoryCount >= TUC::FragmentCount
+            ? FText::FromString(TEXT("Tres pedestales al fondo. Izquierda: Final A (lo activa Nilo). Derecha: Final B (lo activa Ivo). Centro: Final C, juntos."))
+            : FText::FromString(TEXT("Dos pedestales al fondo. Izquierda: Final A (lo activa Nilo). Derecha: Final B (lo activa Ivo). Con 3 fragmentos amarillos se abre un tercer final."));
+        default: return FText::GetEmpty();
+    }
+}
+
 FText ATUCPuzzleDirector::GetChapterTitle() const
 {
     if (ProgressStep < 3) { return FText::FromString(TEXT("CAPÍTULO I — EL CINE ETERNAL WAVE")); }

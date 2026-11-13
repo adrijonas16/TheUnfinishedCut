@@ -45,6 +45,8 @@ public:
 
     UFUNCTION(BlueprintPure, Category="TUC|Puzzle")
     FText GetCurrentObjective() const;
+    /** Dónde está el objetivo actual y qué buscar (texto de ayuda para el HUD). */
+    FText GetObjectiveDetail() const;
 
     UFUNCTION(BlueprintPure, Category="TUC|Puzzle")
     FText GetChapterTitle() const;

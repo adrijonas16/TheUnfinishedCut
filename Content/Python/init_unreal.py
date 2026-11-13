@@ -9,7 +9,17 @@ from pathlib import Path
 import unreal
 
 _MARKER = "/Game/TUC/Kit/Meshes/SM_Watcher"
+# Subir este número obliga a reimportar al abrir (p. ej. tras un git pull con assets nuevos).
+IMPORT_VERSION = "3"
 _handle = None
+
+
+def _imported_version():
+    marker = Path(unreal.Paths.project_dir()) / "Saved" / "TUC_ImportVersion.txt"
+    try:
+        return marker.read_text(encoding="utf-8").strip()
+    except Exception:
+        return ""
 
 
 def _run_import():
@@ -29,9 +39,9 @@ def _on_tick(_delta):
         return
     unreal.unregister_slate_post_tick_callback(_handle)
     _handle = None
-    if unreal.EditorAssetLibrary.does_asset_exist(_MARKER):
+    if unreal.EditorAssetLibrary.does_asset_exist(_MARKER) and _imported_version() == IMPORT_VERSION:
         return
-    unreal.log("TUC: primera apertura del proyecto, importando el kit de assets (1-2 minutos)...")
+    unreal.log("TUC: importando/actualizando los assets del juego (2-4 minutos)...")
     try:
         _run_import()
     except Exception as error:  # nunca bloquear el editor

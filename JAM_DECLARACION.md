@@ -36,6 +36,21 @@ Tema: **DIRECTOR'S CUT**. Juego: **The Unfinished Cut**.
 | Barreras | construction barrier | EslemZeki |
 | Altavoces | Speaker | gengarswapshop |
 
+## Texturas de superficies (ambientCG, licencia CC0, descargadas el 13 nov 2026)
+| Uso en el juego | Material ambientCG |
+|---|---|
+| Asfalto de la calle | Asphalt031 |
+| Acera | PavingStones142 |
+| Alfombra roja del cine | Fabric026 |
+| Paneles de pared del cine | Carpet012 |
+| Piso a cuadros de los 80 | Tiles139 (recoloreado en damero) |
+| Piso del futuro | Tiles140 |
+| Piso del Archivo | PavingStones138 |
+| Muro de ladrillo | Bricks105 |
+| Muro de piedra del Archivo | Bricks108A |
+
+Fuente: https://ambientcg.com (CC0 1.0). Archivos en `ExternalAssets/TUC_Kit/Surfaces`.
+
 Además: contenido básico del motor (`/Engine/BasicShapes`) y componentes de cielo/niebla del motor.
 
 ## Entrega (recordatorio)
