@@ -27,7 +27,7 @@ KIT_ROOT = "/Game/TUC/Kit"
 SURF_DIR = KIT_DIR / "Surfaces"
 
 # Debe coincidir con IMPORT_VERSION de Content/Python/init_unreal.py.
-IMPORT_VERSION = "3"
+IMPORT_VERSION = "4"
 
 # UE 5.5+ importa FBX con Interchange, que ignora las opciones FbxImportUI (escala, esqueleto,
 # animaciones, materiales). Forzar el importador FBX clásico para que todo salga igual en 5.1–5.7.
@@ -564,8 +564,33 @@ def import_nilo():
     return ready
 
 
+# ───────────────────────── interfaz (menú, cómo jugar, botones) ─────────────────────────
+UI_DIR = PROJECT_DIR / "ExternalAssets" / "TUC_UI"
+UI_DEST = "/Game/TUC/UI"
+
+
+def import_ui():
+    files = sorted(UI_DIR.glob("T_UI_*.png")) if UI_DIR.exists() else []
+    ok = 0
+    for png in files:
+        paths = run_import(png, UI_DEST)
+        texture = EAL.load_asset(paths[0]) if paths else EAL.load_asset(f"{UI_DEST}/{png.stem}")
+        if not isinstance(texture, unreal.Texture2D):
+            unreal.log_warning(f"TUC: no se pudo importar la imagen de interfaz {png.name}")
+            continue
+        texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
+        texture.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
+        texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+        texture.set_editor_property("never_stream", True)
+        texture.set_editor_property("srgb", True)
+        EAL.save_loaded_asset(texture)
+        ok += 1
+    log(f"interfaz: {ok}/{len(files)} imágenes")
+    return ok == len(files)
+
+
 # ───────────────────────── ejecución ─────────────────────────
-results = [import_kit(), import_overrides()] + [import_meshy(spec) for spec in MESHY_ASSETS] + [import_ivo(), import_nilo()]
+results = [import_ui(), import_kit(), import_overrides()] + [import_meshy(spec) for spec in MESHY_ASSETS] + [import_ivo(), import_nilo()]
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 
 try:

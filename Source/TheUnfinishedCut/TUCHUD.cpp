@@ -5,14 +5,13 @@
 #include "TUCPlayerController.h"
 #include "TUCPuzzleDirector.h"
 #include "TUCWatcher.h"
-#include "CanvasItem.h"
 #include "Engine/Canvas.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
-#include "Fonts/FontMeasure.h"
-#include "Framework/Application/SlateApplication.h"
-#include "Rendering/SlateRenderer.h"
-#include "Styling/CoreStyle.h"
+#include "Engine/Engine.h"
+#include "Engine/Font.h"
+#include "Engine/Texture2D.h"
+#include "TUCAssets.h"
 
 namespace
 {
@@ -22,8 +21,8 @@ namespace
     const FLinearColor HudOrange(1.0f, 0.62f, 0.15f);
     const FLinearColor HudRed(1.0f, 0.28f, 0.22f);
     const FLinearColor HudMuted(0.72f, 0.76f, 0.84f);
-    const FLinearColor HudPanel(0.02f, 0.025f, 0.04f, 0.78f);
-    const FLinearColor HudPanelBorder(1.0f, 0.82f, 0.25f, 0.35f);
+    const FLinearColor HudPanel(0.07f, 0.035f, 0.15f, 0.84f);
+    const FLinearColor HudPanelBorder(0.67f, 0.55f, 1.0f, 0.55f);
 
     FLinearColor ColorFor(ETUCCharacterType Type)
     {
@@ -38,38 +37,62 @@ namespace
 
 // ───────────────────────── texto ─────────────────────────
 
-FSlateFontInfo ATUCHUD::MakeFont(float Size, bool bBold) const
+float ATUCHUD::MakeFont(float Size, bool /*bBold*/) const
 {
-    const int32 Points = FMath::Max(8, FMath::RoundToInt(Size * UIScale));
-    return FCoreStyle::GetDefaultFontStyle(bBold ? TEXT("Bold") : TEXT("Regular"), Points);
+    return Size;
 }
 
-FVector2D ATUCHUD::Measure(const FString& Text, const FSlateFontInfo& Font) const
+UFont* ATUCHUD::HudFont() const
 {
-    if (FSlateApplication::IsInitialized() && FSlateApplication::Get().GetRenderer())
+    // Fuente del motor (Roboto, caché en tiempo de ejecución): se ve nítida al escalarla.
+    return GEngine ? GEngine->GetLargeFont() : nullptr;
+}
+
+float ATUCHUD::FontScale(float Size) const
+{
+    // Size en "puntos" de diseño a 1080p → píxeles reales en esta resolución.
+    const float TargetPixels = Size * 1.3333f * UIScale;
+    return BaseFontHeight > 1.0f ? TargetPixels / BaseFontHeight : 1.0f;
+}
+
+FVector2D ATUCHUD::Measure(const FString& Text, float Size) const
+{
+    float Width = 0.0f;
+    float Height = 0.0f;
+    if (Canvas && HudFont())
     {
-        const TSharedRef<FSlateFontMeasure> FontMeasure = FSlateApplication::Get().GetRenderer()->GetFontMeasureService();
-        return FVector2D(FontMeasure->Measure(Text, Font));
+        GetTextSize(Text, Width, Height, HudFont(), FontScale(Size));
     }
-    const float Pixels = Font.Size * 96.0f / 72.0f;
-    return FVector2D(Text.Len() * Pixels * 0.55f, Pixels * 1.25f);
+    return FVector2D(Width, Height);
 }
 
 float ATUCHUD::DrawTextAt(const FString& Text, float X, float Y, const FLinearColor& Color, float Size, bool bBold, float HAlign)
 {
-    if (!Canvas || Text.IsEmpty())
+    UFont* Font = HudFont();
+    if (!Canvas || !Font || Text.IsEmpty())
     {
         return 0.0f;
     }
-    const FSlateFontInfo Font = MakeFont(Size, bBold);
-    const FVector2D Dimensions = Measure(Text, Font);
-    FCanvasTextItem Item(FVector2D(X - Dimensions.X * HAlign, Y), FText::FromString(Text), Font, Color);
-    Item.EnableShadow(FLinearColor(0.0f, 0.0f, 0.0f, 0.9f), FVector2D(2.0f, 2.0f));
-    Canvas->DrawItem(Item);
-    return static_cast<float>(Dimensions.Y);
+    const float Scale = FontScale(Size);
+    float Width = 0.0f;
+    float Height = 0.0f;
+    GetTextSize(Text, Width, Height, Font, Scale);
+    const float DrawX = X - Width * HAlign;
+
+    FFontRenderInfo RenderInfo;
+    RenderInfo.bClipText = false;
+    RenderInfo.bEnableShadow = true;
+    Canvas->SetDrawColor(Color.ToFColor(true));
+    Canvas->DrawText(Font, Text, DrawX, Y, Scale, Scale, RenderInfo);
+    if (bBold)
+    {
+        // Negrita simulada: segunda pasada desplazada un píxel.
+        Canvas->DrawText(Font, Text, DrawX + FMath::Max(1.0f, UIScale), Y, Scale, Scale, RenderInfo);
+    }
+    return Height;
 }
 
-TArray<FString> ATUCHUD::WrapLines(const FString& Text, const FSlateFontInfo& Font, float MaxWidth) const
+TArray<FString> ATUCHUD::WrapLines(const FString& Text, float Font, float MaxWidth) const
 {
     TArray<FString> Words;
     Text.ParseIntoArray(Words, TEXT(" "), true);
@@ -98,7 +121,7 @@ TArray<FString> ATUCHUD::WrapLines(const FString& Text, const FSlateFontInfo& Fo
 
 float ATUCHUD::DrawWrapped(const FString& Text, float X, float Y, float MaxWidth, const FLinearColor& Color, float Size, bool bBold, float HAlign, float LineGap)
 {
-    const FSlateFontInfo Font = MakeFont(Size, bBold);
+    const float Font = MakeFont(Size, bBold);
     float Total = 0.0f;
     for (const FString& Line : WrapLines(Text, Font, MaxWidth))
     {
@@ -144,6 +167,11 @@ void ATUCHUD::DrawHUD()
 
     UIScale = FMath::Clamp(Canvas->ClipY / 1080.0f, 0.7f, 2.0f);
     MenuItemRects.Reset();
+    if (UFont* Font = HudFont())
+    {
+        float BaseWidth = 0.0f;
+        GetTextSize(TEXT("Ag"), BaseWidth, BaseFontHeight, Font, 1.0f);
+    }
 
     ATUCPlayerController* Controller = Cast<ATUCPlayerController>(GetOwningPlayerController());
     const ATUCPuzzleDirector* Director = ATUCPuzzleDirector::Get(this);
@@ -269,7 +297,7 @@ float ATUCHUD::DrawHowToContent(float X, float Y, float Width)
     return Y - Start;
 }
 
-void ATUCHUD::DrawMenuScreen(ATUCPlayerController* Controller, const ATUCPuzzleDirector* Director)
+void ATUCHUD::DrawMenuScreenFallback(ATUCPlayerController* Controller, const ATUCPuzzleDirector* Director)
 {
     const float W = Canvas->ClipX;
     const float H = Canvas->ClipY;
@@ -360,6 +388,174 @@ void ATUCHUD::DrawEnding(const ATUCPuzzleDirector* Director)
     }
     Y += DrawTextAt(TEXT("THE UNFINISHED CUT  ·  FIN  ·  Gracias por jugar"), CenterX, Y, HudCyan, 20.0f, true, 0.5f) + 30.0f * UIScale;
     DrawTextAt(TEXT("ENTER / A — volver al menú principal"), CenterX, Y, FLinearColor::White, 20.0f, true, 0.5f);
+}
+
+// ───────────────────────── menús con imágenes (Tools/UI/make_ui.py) ─────────────────────────
+
+UTexture2D* ATUCHUD::GetUITexture(const FString& Name)
+{
+    if (const TObjectPtr<UTexture2D>* Found = UITextures.Find(FName(*Name)))
+    {
+        return Found->Get();
+    }
+    const FString Path = FString::Printf(TEXT("/Game/TUC/UI/%s"), *Name);
+    UTexture2D* Texture = TUCAssets::LoadAsset<UTexture2D>(*Path);
+    UITextures.Add(FName(*Name), Texture);
+    return Texture;
+}
+
+void ATUCHUD::SetDesignSpace()
+{
+    // "Cover": la imagen de 1920x1080 llena la pantalla sin deformarse.
+    DesignScale = FMath::Max(Canvas->ClipX / 1920.0f, Canvas->ClipY / 1080.0f);
+    DesignOffset = FVector2D((Canvas->ClipX - 1920.0f * DesignScale) * 0.5f, (Canvas->ClipY - 1080.0f * DesignScale) * 0.5f);
+}
+
+FVector2D ATUCHUD::ToScreen(float X, float Y) const
+{
+    return FVector2D(DesignOffset.X + X * DesignScale, DesignOffset.Y + Y * DesignScale);
+}
+
+void ATUCHUD::DrawDesignImage(UTexture2D* Texture, float X, float Y, float W, float H, const FLinearColor& Tint)
+{
+    if (!Texture)
+    {
+        return;
+    }
+    const FVector2D P = ToScreen(X, Y);
+    DrawTexture(Texture, static_cast<float>(P.X), static_cast<float>(P.Y), W * DesignScale, H * DesignScale, 0.0f, 0.0f, 1.0f, 1.0f, Tint, BLEND_Translucent);
+}
+
+FString ATUCHUD::ButtonTextureName(ETUCMenuScreen Screen, ETUCMenuAction Action, bool bSelected)
+{
+    const TCHAR* Key = TEXT("Back");
+    switch (Action)
+    {
+        case ETUCMenuAction::Continue: Key = TEXT("Continue"); break;
+        case ETUCMenuAction::NewGame:  Key = TEXT("NewGame"); break;
+        case ETUCMenuAction::HowTo:    Key = TEXT("HowTo"); break;
+        case ETUCMenuAction::Quit:     Key = Screen == ETUCMenuScreen::Pause ? TEXT("QuitGame") : TEXT("Quit"); break;
+        case ETUCMenuAction::Begin:    Key = TEXT("Begin"); break;
+        case ETUCMenuAction::Back:     Key = TEXT("Back"); break;
+        case ETUCMenuAction::Resume:   Key = TEXT("Resume"); break;
+        case ETUCMenuAction::Restart:  Key = TEXT("Restart"); break;
+        case ETUCMenuAction::MainMenu: Key = TEXT("MainMenu"); break;
+        default: break;
+    }
+    return FString::Printf(TEXT("T_UI_Btn_%s_%d"), Key, bSelected ? 1 : 0);
+}
+
+bool ATUCHUD::DrawImageButtons(ATUCPlayerController* Controller, float X, float TopY, float Step)
+{
+    TArray<FTUCMenuItem> Items;
+    Controller->GetMenuItems(Items);
+    const ETUCMenuScreen Screen = Controller->GetMenuScreen();
+
+    // Todas las imágenes deben existir; si falta una se usa el menú de texto.
+    for (const FTUCMenuItem& Item : Items)
+    {
+        if (!GetUITexture(ButtonTextureName(Screen, Item.Action, false)) || !GetUITexture(ButtonTextureName(Screen, Item.Action, true)))
+        {
+            return false;
+        }
+    }
+
+    float MouseX = 0.0f;
+    float MouseY = 0.0f;
+    const bool bHasMouse = Controller->GetMousePosition(MouseX, MouseY);
+    const FVector2D Mouse(MouseX, MouseY);
+    const bool bMouseMoved = bHasMouse && FVector2D::DistSquared(Mouse, LastMouse) > 4.0;
+    LastMouse = Mouse;
+
+    // La imagen mide 600x124; el botón visible ocupa 560x84 dentro (margen de 20 para el brillo).
+    float Y = TopY;
+    for (int32 Index = 0; Index < Items.Num(); ++Index)
+    {
+        const FBox2D Rect(ToScreen(X, Y), ToScreen(X + 560.0f, Y + 84.0f));
+        MenuItemRects.Add(Rect);
+        if (bMouseMoved && Rect.IsInside(Mouse))
+        {
+            Controller->SetMenuSelection(Index);
+        }
+        const bool bSelected = Controller->GetMenuSelection() == Index;
+        DrawDesignImage(GetUITexture(ButtonTextureName(Screen, Items[Index].Action, bSelected)), X - 20.0f, Y - 20.0f, 600.0f, 124.0f);
+        if (!Items[Index].Hint.IsEmpty() && Items[Index].Action == ETUCMenuAction::Continue)
+        {
+            const FVector2D HintPos = ToScreen(X + 580.0f, Y + 26.0f);
+            DrawTextAt(Items[Index].Hint, static_cast<float>(HintPos.X), static_cast<float>(HintPos.Y), FLinearColor(1.0f, 0.82f, 0.45f), 15.0f, true);
+        }
+        Y += Step;
+    }
+    return true;
+}
+
+void ATUCHUD::DrawMenuScreen(ATUCPlayerController* Controller, const ATUCPuzzleDirector* Director)
+{
+    const ETUCMenuScreen Screen = Controller->GetMenuScreen();
+    const TCHAR* Background = Screen == ETUCMenuScreen::HowTo ? TEXT("T_UI_HowTo")
+        : (Screen == ETUCMenuScreen::Prologue ? TEXT("T_UI_Prologue")
+        : (Screen == ETUCMenuScreen::Pause ? TEXT("T_UI_PauseTitle") : TEXT("T_UI_MenuBG")));
+    UTexture2D* BackgroundTexture = GetUITexture(Background);
+    if (!BackgroundTexture)
+    {
+        DrawMenuScreenFallback(Controller, Director);
+        return;
+    }
+
+    SetDesignSpace();
+    const int32 ItemsBefore = MenuItemRects.Num();
+    bool bButtonsOk = false;
+
+    switch (Screen)
+    {
+        case ETUCMenuScreen::Pause:
+        {
+            DrawRect(FLinearColor(0.03f, 0.01f, 0.08f, 0.72f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+            DrawDesignImage(BackgroundTexture, 510.0f, 90.0f, 900.0f, 220.0f);
+            if (Director)
+            {
+                const FVector2D P = ToScreen(960.0f, 300.0f);
+                DrawWrapped(FString::Printf(TEXT("Objetivo: %s"), *Director->GetCurrentObjective().ToString()),
+                    static_cast<float>(P.X), static_cast<float>(P.Y), 1100.0f * DesignScale, FLinearColor(0.75f, 1.0f, 0.85f), 20.0f, true, 0.5f);
+            }
+            bButtonsOk = DrawImageButtons(Controller, 680.0f, 400.0f, 104.0f);
+            break;
+        }
+        case ETUCMenuScreen::HowTo:
+            DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, 1.0f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+            DrawDesignImage(BackgroundTexture, 0.0f, 0.0f, 1920.0f, 1080.0f);
+            bButtonsOk = DrawImageButtons(Controller, 680.0f, 978.0f, 100.0f);
+            break;
+        case ETUCMenuScreen::Prologue:
+            DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, 1.0f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+            DrawDesignImage(BackgroundTexture, 0.0f, 0.0f, 1920.0f, 1080.0f);
+            bButtonsOk = DrawImageButtons(Controller, 680.0f, 790.0f, 100.0f);
+            break;
+        default:
+        {
+            DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, 1.0f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+            DrawDesignImage(BackgroundTexture, 0.0f, 0.0f, 1920.0f, 1080.0f);
+            bButtonsOk = DrawImageButtons(Controller, 100.0f, 560.0f, 100.0f);
+            const FVector2D Hint = ToScreen(110.0f, 1000.0f);
+            DrawTextAt(TEXT("Ratón o flechas para elegir  ·  clic o ENTER para aceptar"), static_cast<float>(Hint.X), static_cast<float>(Hint.Y),
+                FLinearColor(0.78f, 0.72f, 1.0f), 15.0f, false);
+            if (Director && Director->GetMemoryCount() > 0)
+            {
+                const FVector2D Anchor = ToScreen(110.0f, 960.0f);
+                DrawTextAt(FString::Printf(TEXT("Fragmentos del Ancla: %d / %d"), Director->GetMemoryCount(), TUC::FragmentCount),
+                    static_cast<float>(Anchor.X), static_cast<float>(Anchor.Y), FLinearColor(1.0f, 0.7f, 0.3f), 15.0f, true);
+            }
+            break;
+        }
+    }
+
+    if (!bButtonsOk)
+    {
+        // Faltan imágenes de botones: dibujar los botones de texto encima del fondo.
+        MenuItemRects.SetNum(ItemsBefore);
+        const FVector2D Center = ToScreen(Screen == ETUCMenuScreen::Main ? 380.0f : 960.0f, Screen == ETUCMenuScreen::Main ? 560.0f : 800.0f);
+        DrawMenuButtons(Controller, static_cast<float>(Center.X), static_cast<float>(Center.Y), 460.0f * UIScale);
+    }
 }
 
 // ───────────────────────── juego ─────────────────────────
@@ -522,7 +718,7 @@ void ATUCHUD::DrawGameplay(ATUCPlayerController* Controller, const ATUCPuzzleDir
         float MessageAlpha = 1.0f;
         if (Director->GetActiveMessage(Message, MessageColor, MessageAlpha))
         {
-            const FSlateFontInfo Font = MakeFont(22.0f, true);
+            const float Font = MakeFont(22.0f, true);
             const float MaxW = FMath::Min(900.0f * UIScale, W * 0.5f);
             const TArray<FString> Lines = WrapLines(Message.ToString(), Font, MaxW);
             const float LineH = static_cast<float>(Measure(TEXT("Ag"), Font).Y) + 4.0f * UIScale;

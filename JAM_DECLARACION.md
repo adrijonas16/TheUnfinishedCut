@@ -51,6 +51,10 @@ Tema: **DIRECTOR'S CUT**. Juego: **The Unfinished Cut**.
 
 Fuente: https://ambientcg.com (CC0 1.0). Archivos en `ExternalAssets/TUC_Kit/Surfaces`.
 
+## Interfaz
+- Imágenes del menú, "cómo jugar", prólogo y botones generadas por script durante la jam (`Tools/UI/make_ui.py`), con renders de Ivo y Nilo (modelos Meshy de arriba).
+- Fuentes Griffy y Fredoka (Google Fonts, SIL Open Font License 1.1) en `ExternalAssets/TUC_UI/Fonts`.
+
 Además: contenido básico del motor (`/Engine/BasicShapes`) y componentes de cielo/niebla del motor.
 
 ## Entrega (recordatorio)

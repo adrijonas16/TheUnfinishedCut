@@ -1,0 +1,14 @@
+{
+ "buttons": {
+  "Continue": "CONTINUAR",
+  "NewGame": "NUEVA PARTIDA",
+  "HowTo": "CÓMO JUGAR",
+  "Quit": "SALIR",
+  "Begin": "¡EMPEZAR!",
+  "Back": "VOLVER",
+  "Resume": "SEGUIR JUGANDO",
+  "Restart": "EMPEZAR DE NUEVO",
+  "MainMenu": "MENÚ PRINCIPAL",
+  "QuitGame": "SALIR DEL JUEGO"
+ }
+}
