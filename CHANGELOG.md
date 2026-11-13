@@ -110,3 +110,8 @@ HUD:
 - Letra de juego en todo el HUD (Lilita One desde atlas, con contorno) y títulos con Luckiest Guy.
 - Más difícil: vigilantes más rápidos, con más alcance, que barren con la cabeza, detectan antes y olvidan más lento; segundo vigilante frente a la tarima de los 80.
 - Más animado: menú con zoom lento y motas de luz, botón seleccionado que late, tarjeta de objetivo que entra deslizando con "¡NUEVO OBJETIVO!", aviso [E] que aparece con rebote, bordes rojos que laten al ser visto, fragmentos que giran y flotan, objetivo que "respira", luces que laten y parpadean, balanceo de cámara de Ivo al caminar.
+
+## 1.9 — más modelos reales (13 nov 2026)
+- Nuevos reemplazos Meshy CC0: pantalla con cortinas de terciopelo rojo (cine y Archivo), taquilla "TICKETS", furgoneta retro, cajas del futuro y basurero.
+- Importación más robusta: cada paso corre aparte (un error ya no corta el resto) y el informe guarda el error exacto.
+- Punto de control 2 movido para no chocar con la taquilla.

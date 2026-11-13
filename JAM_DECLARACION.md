@@ -35,6 +35,11 @@ Tema: **DIRECTOR'S CUT**. Juego: **The Unfinished Cut**.
 | Estanterías del Archivo | tall wooden shelf | mulvaney66 |
 | Barreras | construction barrier | EslemZeki |
 | Altavoces | Speaker | gengarswapshop |
+| Pantalla con cortinas de terciopelo (cine y Archivo) | A cinema movie screen with red velvet curtains | charmsgaloreuk |
+| Taquilla del vestíbulo | Carnival Ticket Booth | Tansy |
+| Furgoneta de la calle | Retro Van | Tansy |
+| Cajas del futuro | Earth Crate | noamkamri |
+| Basurero | Rusty galvanized trash can | krinodagamer |
 
 ## Texturas de superficies (ambientCG, licencia CC0, descargadas el 13 nov 2026)
 | Uso en el juego | Material ambientCG |

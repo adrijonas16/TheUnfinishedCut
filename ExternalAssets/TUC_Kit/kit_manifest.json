@@ -835,20 +835,20 @@
     "SM_Van": {
       "faces": 162,
       "size_m": [
-        4.33,
-        2.055,
-        2.103
+        4.4,
+        1.878,
+        1.972
       ],
       "bounds_cm": [
         [
-          -202.0,
-          -102.8,
+          -220.0,
+          -93.9,
           0.0
         ],
         [
-          231.0,
-          102.8,
-          210.3
+          220.0,
+          93.9,
+          197.2
         ]
       ],
       "materials": [
@@ -858,7 +858,8 @@
         "M_NeonRed",
         "M_Steel",
         "M_Rubber"
-      ]
+      ],
+      "override": true
     },
     "SM_Barrier": {
       "faces": 130,
@@ -971,26 +972,27 @@
     "SM_TrashBin": {
       "faces": 24,
       "size_m": [
-        0.571,
-        0.6,
-        0.96
+        0.586,
+        0.61,
+        0.95
       ],
       "bounds_cm": [
         [
-          -28.5,
-          -30.0,
+          -29.3,
+          -30.5,
           0.0
         ],
         [
-          28.5,
-          30.0,
-          96.0
+          29.3,
+          30.5,
+          95.0
         ]
       ],
       "materials": [
         "M_Teal",
         "M_DarkMetal"
-      ]
+      ],
+      "override": true
     },
     "SM_CinemaFacadeSide": {
       "faces": 54,
@@ -1051,20 +1053,20 @@
     "SM_ConcessionCounter": {
       "faces": 63,
       "size_m": [
-        0.87,
-        2.56,
-        2.05
+        1.358,
+        1.341,
+        2.1
       ],
       "bounds_cm": [
         [
-          -43.0,
-          -128.0,
+          -67.9,
+          -67.1,
           0.0
         ],
         [
-          44.0,
-          128.0,
-          205.0
+          67.9,
+          67.1,
+          210.0
         ]
       ],
       "materials": [
@@ -1074,7 +1076,8 @@
         "M_Glass",
         "M_NeonAmber",
         "M_VanRed"
-      ]
+      ],
+      "override": true
     },
     "SM_LobbyPartition": {
       "faces": 60,
@@ -1132,20 +1135,20 @@
     "SM_ProjectionScreen": {
       "faces": 108,
       "size_m": [
-        0.62,
+        2.513,
         9.0,
-        5.7
+        4.511
       ],
       "bounds_cm": [
         [
-          -30.0,
+          -125.6,
           -450.0,
           0.0
         ],
         [
-          32.0,
+          125.6,
           450.0,
-          570.0
+          451.1
         ]
       ],
       "materials": [
@@ -1155,7 +1158,8 @@
         "M_ScreenWhite",
         "M_RedVelvet",
         "M_Gold"
-      ]
+      ],
+      "override": true
     },
     "SM_ArcadeCabinet": {
       "faces": 110,
@@ -1321,27 +1325,28 @@
     "SM_FutureCrate": {
       "faces": 18,
       "size_m": [
-        0.86,
-        0.8,
-        0.8
+        0.822,
+        1.293,
+        0.85
       ],
       "bounds_cm": [
         [
-          -42.0,
-          -40.0,
+          -41.1,
+          -64.6,
           0.0
         ],
         [
-          44.0,
-          40.0,
-          80.0
+          41.1,
+          64.6,
+          85.0
         ]
       ],
       "materials": [
         "M_Teal",
         "M_DarkMetal",
         "M_NeonCyan"
-      ]
+      ],
+      "override": true
     },
     "SM_HoloPanel": {
       "faces": 12,

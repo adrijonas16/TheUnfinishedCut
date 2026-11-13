@@ -27,7 +27,7 @@ KIT_ROOT = "/Game/TUC/Kit"
 SURF_DIR = KIT_DIR / "Surfaces"
 
 # Debe coincidir con IMPORT_VERSION de Content/Python/init_unreal.py.
-IMPORT_VERSION = "6"
+IMPORT_VERSION = "8"
 
 # UE 5.5+ importa FBX con Interchange, que ignora las opciones FbxImportUI (escala, esqueleto,
 # animaciones, materiales). Forzar el importador FBX clásico para que todo salga igual en 5.1–5.7.
@@ -339,9 +339,18 @@ def import_kit():
 
     master = build_master_material(textures.get("T_White"))
     surfaces = import_surfaces()
-    surface_master = build_surface_master(next(iter(surfaces.values()))[1]) if surfaces else None
-    materials = {name: build_material_instance(name, spec, master, textures, surfaces, surface_master)
-                 for name, spec in manifest["materials"].items()}
+    surface_master = None
+    if surfaces:
+        try:
+            surface_master = build_surface_master(next(iter(surfaces.values()))[1])
+        except Exception as error:
+            problem(f"material de superficies (se usan las texturas del kit): {error}")
+    materials = {}
+    for name, spec in manifest["materials"].items():
+        try:
+            materials[name] = build_material_instance(name, spec, master, textures, surfaces, surface_master)
+        except Exception as error:
+            problem(f"material {name}: {error}")
     log(f"{len(materials)} instancias de material listas")
 
     ok = 0
@@ -356,13 +365,16 @@ def import_kit():
             if not kit_fbx.exists():
                 ok += 1  # solo existe como reemplazo Meshy (se importa después)
                 continue
-            mesh = import_mesh(kit_fbx, f"{KIT_ROOT}/Meshes", name)
-            if mesh is None:
-                problem(f"no se pudo importar {name}")
-                continue
-            assign_by_slot(mesh, materials, manifest["meshes"][name].get("materials"))
-            EAL.save_loaded_asset(mesh)
-            ok += 1
+            try:
+                mesh = import_mesh(kit_fbx, f"{KIT_ROOT}/Meshes", name)
+                if mesh is None:
+                    problem(f"no se pudo importar {name}")
+                    continue
+                assign_by_slot(mesh, materials, manifest["meshes"][name].get("materials"))
+                EAL.save_loaded_asset(mesh)
+                ok += 1
+            except Exception as error:
+                problem(f"malla {name}: {error}")
     log(f"kit: {ok}/{len(names)} mallas importadas")
     return ok == len(names)
 
@@ -507,7 +519,12 @@ def import_overrides():
         if not fbx.exists():
             continue
         log(f"reemplazo realista: {name} ({info.get('source')})")
-        mesh = import_mesh(fbx, f"{KIT_ROOT}/Meshes", name)
+        try:
+            mesh = import_mesh(fbx, f"{KIT_ROOT}/Meshes", name)
+        except Exception as error:
+            problem(f"reemplazo {name}: {error}")
+            ok = False
+            continue
         if mesh is None:
             problem(f"no se pudo importar el reemplazo {name}")
             ok = False
@@ -615,7 +632,25 @@ def import_ui():
 
 
 # ───────────────────────── ejecución ─────────────────────────
-results = [import_ui(), import_kit(), import_overrides()] + [import_meshy(spec) for spec in MESHY_ASSETS] + [import_ivo(), import_nilo()]
+import traceback
+
+
+def safe(step, *args):
+    """Ejecuta un paso sin que un error detenga los demás; el error queda en el informe."""
+    name = getattr(step, "__name__", str(step))
+    try:
+        ok = step(*args)
+        log(f"paso {name}: {'OK' if ok else 'con avisos'}")
+        return bool(ok)
+    except Exception as error:
+        problem(f"el paso {name} falló: {error}")
+        for line in traceback.format_exc().splitlines()[-6:]:
+            REPORT.append("    " + line)
+        return False
+
+
+log(f"Unreal {unreal.SystemLibrary.get_engine_version()}")
+results = [safe(import_ui), safe(import_kit), safe(import_overrides)] + [safe(import_meshy, spec) for spec in MESHY_ASSETS] + [safe(import_ivo), safe(import_nilo)]
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 
 try:

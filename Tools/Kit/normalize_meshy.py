@@ -38,6 +38,11 @@ OVERRIDES = {
     "SM_ReelShelf":      ("Shelf",    90, "height", 2.4, 10000, 1),
     "SM_Speaker":        ("Speaker",  90, "height", 1.15, 12000, 1),
     "SM_Terminal":       ("Terminal", 90, "height", 1.35, 20000, 1),
+    "SM_ProjectionScreen": ("Curtain", 90, "length", 9.0, 25000, 1),
+    "SM_ConcessionCounter": ("Booth", 90, "height", 2.1, 25000, 1),
+    "SM_Van":            ("Van",      90, "length", 4.4, 25000, 1),
+    "SM_FutureCrate":    ("Crate",    90, "height", 0.85, 15000, 1),
+    "SM_TrashBin":       ("Trash",    90, "height", 0.95, 12000, 1),
 }
 CENTER_PIVOT = {"SM_Watcher"}
 # pivote en el poste (extremo -X) en lugar del centro

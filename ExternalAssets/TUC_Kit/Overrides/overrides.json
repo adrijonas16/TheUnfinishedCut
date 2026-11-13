@@ -335,5 +335,133 @@
       "BaseColor": "SM_Terminal_BaseColor.png"
     },
     "source": "Terminal"
+  },
+  "SM_ProjectionScreen": {
+    "faces": 20264,
+    "size_m": [
+      2.513,
+      9.0,
+      4.511
+    ],
+    "bounds_cm": [
+      [
+        -125.6,
+        -450.0,
+        0.0
+      ],
+      [
+        125.6,
+        450.0,
+        451.1
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_ProjectionScreen_BaseColor.png"
+    },
+    "source": "Curtain"
+  },
+  "SM_ConcessionCounter": {
+    "faces": 6166,
+    "size_m": [
+      1.358,
+      1.341,
+      2.1
+    ],
+    "bounds_cm": [
+      [
+        -67.9,
+        -67.1,
+        0.0
+      ],
+      [
+        67.9,
+        67.1,
+        210.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_ConcessionCounter_BaseColor.png"
+    },
+    "source": "Booth"
+  },
+  "SM_Van": {
+    "faces": 25000,
+    "size_m": [
+      4.4,
+      1.878,
+      1.972
+    ],
+    "bounds_cm": [
+      [
+        -220.0,
+        -93.9,
+        0.0
+      ],
+      [
+        220.0,
+        93.9,
+        197.2
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Van_BaseColor.png"
+    },
+    "source": "Van"
+  },
+  "SM_FutureCrate": {
+    "faces": 9974,
+    "size_m": [
+      0.822,
+      1.293,
+      0.85
+    ],
+    "bounds_cm": [
+      [
+        -41.1,
+        -64.6,
+        0.0
+      ],
+      [
+        41.1,
+        64.6,
+        85.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_FutureCrate_BaseColor.png",
+      "Normal": "SM_FutureCrate_Normal.png",
+      "Roughness": "SM_FutureCrate_Roughness.png",
+      "Metallic": "SM_FutureCrate_Metallic.png",
+      "Emissive": "SM_FutureCrate_Emissive.png"
+    },
+    "source": "Crate"
+  },
+  "SM_TrashBin": {
+    "faces": 11999,
+    "size_m": [
+      0.586,
+      0.61,
+      0.95
+    ],
+    "bounds_cm": [
+      [
+        -29.3,
+        -30.5,
+        0.0
+      ],
+      [
+        29.3,
+        30.5,
+        95.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_TrashBin_BaseColor.png",
+      "Normal": "SM_TrashBin_Normal.png",
+      "Roughness": "SM_TrashBin_Roughness.png",
+      "Metallic": "SM_TrashBin_Metallic.png",
+      "Emissive": "SM_TrashBin_Emissive.png"
+    },
+    "source": "Trash"
   }
 }

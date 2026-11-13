@@ -101,7 +101,7 @@ void ATUCGameMode::GetCheckpoint(int32 Step, FVector& OutIvoLocation, float& Out
     {
         case 0:  OutIvoLocation = FVector(-900.0f, -70.0f, IvoSpawnZ); break;  // Calle, frente al cine
         case 1:  OutIvoLocation = FVector(300.0f, -250.0f, IvoSpawnZ); break;  // Junto a la consola
-        case 2:  OutIvoLocation = FVector(600.0f, -150.0f, IvoSpawnZ); break;  // Vestíbulo, fuera de la patrulla
+        case 2:  OutIvoLocation = FVector(520.0f, -40.0f, IvoSpawnZ); break;  // Vestíbulo, fuera de la patrulla
         case 3:  OutIvoLocation = FVector(1780.0f, -150.0f, IvoSpawnZ); break; // Llegada a los años 80
         case 4:  OutIvoLocation = FVector(1800.0f, 150.0f, IvoSpawnZ); break;  // Junto al rollo recuperado
         case 5:  OutIvoLocation = FVector(3150.0f, -120.0f, IvoSpawnZ); break; // Llegada al futuro
