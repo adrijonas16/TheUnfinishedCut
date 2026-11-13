@@ -7,6 +7,7 @@
 #include "Modules/ModuleManager.h"
 
 class UMaterialInstanceDynamic;
+class UMeshComponent;
 class UStaticMesh;
 class UStaticMeshComponent;
 
@@ -62,6 +63,13 @@ namespace TUCAssets
         }
         return nullptr;
     }
+
+    /**
+     * Asigna a cada slot de la malla el material del kit por nombre de slot (MI_<slot> o M_<malla> de los
+     * reemplazos). Corrige mallas que quedaron con el material por defecto (cuadros grises) si la
+     * importación no pudo enlazarlos. Devuelve cuántos slots se asignaron.
+     */
+    int32 ApplyKitMaterials(UMeshComponent* Component, const UStaticMesh* Mesh);
 
     /** Tiñe el slot M_AccentGlow (parámetro Tint del material maestro). Devuelve el MID o nullptr. */
     UMaterialInstanceDynamic* TintAccent(UStaticMeshComponent* Component, const FLinearColor& Color);

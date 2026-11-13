@@ -55,6 +55,7 @@ private:
 
     bool TryUseAnimatedBody();
     void UpdateBodyAnimation();
+    float HeadBobPhase = 0.0f;
 
     /** Modelo del kit (SM_Ivo). Invisible en su propia primera persona. */
     UPROPERTY(VisibleAnywhere, Category="TUC|Visual")

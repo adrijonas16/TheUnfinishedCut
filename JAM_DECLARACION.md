@@ -54,7 +54,7 @@ Fuente: https://ambientcg.com (CC0 1.0). Archivos en `ExternalAssets/TUC_Kit/Sur
 ## Interfaz
 - Ilustración del menú generada con IA en Meshy (modelo Nano Banana Pro) el 13 nov 2026: `ExternalAssets/TUC_UI/KeyArt_*.png`.
 - Imágenes del menú, "cómo jugar", prólogo y botones compuestas por script durante la jam (`Tools/UI/make_ui.py`), con renders de Ivo y Nilo (modelos Meshy de arriba).
-- Fuentes Griffy y Fredoka (Google Fonts, SIL Open Font License 1.1) en `ExternalAssets/TUC_UI/Fonts`.
+- Fuentes Luckiest Guy (Apache 2.0) y Lilita One (SIL Open Font License 1.1), de Google Fonts, en `ExternalAssets/TUC_UI/Fonts`. El HUD usa Lilita One desde un atlas generado (`T_UI_FontAtlas`, `TUCFontData.h`).
 
 Además: contenido básico del motor (`/Engine/BasicShapes`) y componentes de cielo/niebla del motor.
 

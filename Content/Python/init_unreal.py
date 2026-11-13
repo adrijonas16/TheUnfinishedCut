@@ -10,7 +10,7 @@ import unreal
 
 _MARKER = "/Game/TUC/Kit/Meshes/SM_Watcher"
 # Subir este número obliga a reimportar al abrir (p. ej. tras un git pull con assets nuevos).
-IMPORT_VERSION = "5"
+IMPORT_VERSION = "6"
 _handle = None
 
 

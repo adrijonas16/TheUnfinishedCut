@@ -63,20 +63,26 @@ private:
     TObjectPtr<UMaterialInstanceDynamic> KitAccent;
 
     float HoverPhase = 0.0f;
+
+    /** El centinela mueve la cabeza de lado a lado mientras patrulla (su visión barre el pasillo). */
+    UPROPERTY(EditAnywhere, Category="TUC|Watcher")
+    float SweepDegrees = 20.0f;
+
+    float SweepPhase = 0.0f;
     float KitBaseZ = 0.0f;
 
     UPROPERTY(EditAnywhere, Category="TUC|Watcher")
-    float SightRange = 450.0f;
+    float SightRange = 500.0f;
 
     UPROPERTY(EditAnywhere, Category="TUC|Watcher")
-    float SightHalfAngle = 50.0f;
+    float SightHalfAngle = 52.0f;
 
     UPROPERTY(EditAnywhere, Category="TUC|Watcher")
-    float PatrolSpeed = 115.0f;
+    float PatrolSpeed = 165.0f;
 
     /** Segundos de visión continua necesarios para detectar. */
     UPROPERTY(EditAnywhere, Category="TUC|Watcher")
-    float TimeToDetect = 0.7f;
+    float TimeToDetect = 0.6f;
 
     FVector PatrolA = FVector::ZeroVector;
     FVector PatrolB = FVector::ZeroVector;

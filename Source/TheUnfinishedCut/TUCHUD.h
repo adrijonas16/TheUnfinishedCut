@@ -38,6 +38,12 @@ private:
     float MakeFont(float Size, bool bBold) const;
     UFont* HudFont() const;
     float FontScale(float Size) const;
+    float BitmapScale(float Size) const;
+    void DrawBitmapPass(const FString& Text, float X, float Baseline, float Scale, const FLinearColor& Color);
+
+    /** Atlas de la fuente de juego (T_UI_FontAtlas). Si falta, se usa la fuente del motor. */
+    UPROPERTY(Transient)
+    TObjectPtr<UTexture2D> FontAtlas;
     FVector2D Measure(const FString& Text, float Size) const;
     /** Dibuja texto; HAlign 0 = izquierda, 0.5 = centro, 1 = derecha. Devuelve la altura. */
     float DrawTextAt(const FString& Text, float X, float Y, const FLinearColor& Color, float Size, bool bBold = false, float HAlign = 0.0f);
@@ -57,6 +63,13 @@ private:
     void DrawDesignImage(UTexture2D* Texture, float X, float Y, float W, float H, const FLinearColor& Tint = FLinearColor::White);
     static FString ButtonTextureName(ETUCMenuScreen Screen, ETUCMenuAction Action, bool bSelected);
     bool DrawImageButtons(ATUCPlayerController* Controller, float X, float TopY, float Step);
+    void DrawMenuBackground(UTexture2D* Texture, float Darken);
+
+    // ── animación del HUD ──
+    FString LastObjective;
+    double ObjectiveChangedAt = -100.0;
+    FString LastPrompt;
+    double PromptShownAt = -100.0;
 
     // ── pantallas ──
     void DrawMenuScreen(ATUCPlayerController* Controller, const ATUCPuzzleDirector* Director);

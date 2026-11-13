@@ -138,7 +138,7 @@ for m in bpy.data.materials:
     b.inputs["Emission Strength"].default_value = spec["emissive"] * 0.9
 
 # ── letrero del cine ──
-font_path = os.path.join(PROJECT, "ExternalAssets", "TUC_UI", "Fonts", "Griffy-Regular.ttf")
+font_path = os.path.join(PROJECT, "ExternalAssets", "TUC_UI", "Fonts", "LuckiestGuy-Regular.ttf")
 for text, x, y, z, yaw, size, r, g, bl in L["signs"]:
     if x > 260:
         continue

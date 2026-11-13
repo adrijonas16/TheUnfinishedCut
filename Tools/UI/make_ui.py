@@ -4,7 +4,7 @@ Estilo: terror acogedor (noche violeta, luna, niebla, huellas fantasma, cinta de
 Las imágenes llevan el texto ya dibujado, así siempre se ven en Unreal aunque falle una fuente.
 
 Uso:  python3 Tools/UI/make_ui.py      (escribe en ExternalAssets/TUC_UI)
-Fuentes: Griffy y Fredoka (Google Fonts, licencia OFL) en ExternalAssets/TUC_UI/Fonts.
+Fuentes: Luckiest Guy (Apache 2.0) y Lilita One (OFL), de Google Fonts, en ExternalAssets/TUC_UI/Fonts.
 """
 import json
 import math
@@ -30,13 +30,13 @@ RED = (255, 80, 90)
 
 
 def griffy(size):
-    return ImageFont.truetype(str(FONTS / "Griffy-Regular.ttf"), size)
+    """Fuente de títulos: Luckiest Guy (Apache 2.0), gruesa y de videojuego."""
+    return ImageFont.truetype(str(FONTS / "LuckiestGuy-Regular.ttf"), size)
 
 
 def fredoka(size, weight="Bold"):
-    font = ImageFont.truetype(str(FONTS / "Fredoka-Variable.ttf"), size)
-    font.set_variation_by_name(weight)
-    return font
+    """Fuente de interfaz: Lilita One (OFL)."""
+    return ImageFont.truetype(str(FONTS / "LilitaOne-Regular.ttf"), size)
 
 
 def text_size(draw, text, font):
@@ -272,7 +272,7 @@ def make_menu_background():
     vignette(img, 150)
     glow_text(img, (110, 60), "The", griffy(80), MOON, glow=(255, 200, 120), glow_radius=10)
     glow_text(img, (100, 130), "Unfinished", griffy(150), MOON, glow=(255, 190, 110))
-    glow_text(img, (100, 290), "Cut", griffy(150), (255, 196, 110), glow=(255, 140, 60))
+    glow_text(img, (100, 262), "Cut", griffy(150), (255, 196, 110), glow=(255, 140, 60))
     d = ImageDraw.Draw(img)
     paw(d, 112, 482, 20, MINT + (230,))
     d.text((140, 462), "Ivo + Nilo  ·  una aventura entre películas", font=fredoka(32, "SemiBold"), fill=LILAC,
@@ -429,12 +429,78 @@ BUTTONS = {
 }
 
 
+# ───────────────────────── fuente del HUD (atlas de glifos) ─────────────────────────
+HUD_CHARS = ("".join(chr(c) for c in range(32, 127)) + "áéíóúÁÉÍÓÚñÑüÜ¿¡·—–…“”‘’«»ºª°×")
+
+
+def make_font_atlas(size=72, atlas=1024, pad=8):
+    """Atlas blanco con alfa + tabla de glifos en C++ (TUCFontData.h). El HUD dibuja el texto con esto,
+    así la fuente de juego se ve igual en cualquier versión de Unreal."""
+    font = ImageFont.truetype(str(FONTS / "LilitaOne-Regular.ttf"), size)
+    ascent, descent = font.getmetrics()
+    img = Image.new("RGBA", (atlas, atlas), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    x = y = pad
+    row_h = 0
+    glyphs = []
+    for ch in HUD_CHARS:
+        adv = font.getlength(ch)
+        if ch == " ":
+            glyphs.append((ord(ch), 0, 0, 0, 0, 0, 0, adv))
+            continue
+        box = font.getbbox(ch, anchor="ls")
+        if box[2] - box[0] <= 0 or not font.getmask(ch).getbbox():
+            continue
+        w = box[2] - box[0] + pad * 2
+        h = box[3] - box[1] + pad * 2
+        if x + w > atlas:
+            x = pad
+            y += row_h + pad
+            row_h = 0
+        if y + h > atlas:
+            raise RuntimeError("atlas lleno")
+        d.text((x + pad - box[0], y + pad - box[1]), ch, font=font, fill=(255, 255, 255, 255), anchor="ls")
+        glyphs.append((ord(ch), x, y, w, h, box[0] - pad, box[1] - pad, adv))
+        x += w + pad
+        row_h = max(row_h, h)
+    img.save(OUT / "T_UI_FontAtlas.png")
+
+    lines = [
+        "\ufeff// Generado por Tools/UI/make_ui.py — no editar a mano.",
+        "// Fuente del HUD: Lilita One (Google Fonts, SIL Open Font License 1.1).",
+        "#pragma once",
+        "",
+        "#include \"CoreMinimal.h\"",
+        "",
+        "struct FTUCGlyph",
+        "{",
+        "    uint32 Code;",
+        "    uint16 X, Y, W, H;",
+        "    int16 OffX, OffY;",
+        "    float Advance;",
+        "};",
+        "",
+        f"constexpr float GTUCFontAscent = {ascent}.0f;",
+        f"constexpr float GTUCFontDescent = {descent}.0f;",
+        f"constexpr float GTUCFontAtlasSize = {atlas}.0f;",
+        "",
+        "static const FTUCGlyph GTUCGlyphs[] =",
+        "{",
+    ]
+    for code, gx, gy, gw, gh, ox, oy, adv in glyphs:
+        lines.append(f"    {{ {code}u, {gx}, {gy}, {gw}, {gh}, {ox}, {oy}, {adv:.2f}f }},")
+    lines += ["};", ""]
+    (ROOT / "Source" / "TheUnfinishedCut" / "TUCFontData.h").write_bytes("\n".join(lines).encode("utf-8"))
+    print(f"atlas: {len(glyphs)} glifos, alto de línea {ascent + descent}px")
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     make_menu_background()
     make_howto()
     make_prologue()
     make_pause_title()
+    make_font_atlas()
     for key, label in BUTTONS.items():
         make_button(label, False, f"T_UI_Btn_{key}_0")
         make_button(label, True, f"T_UI_Btn_{key}_1")

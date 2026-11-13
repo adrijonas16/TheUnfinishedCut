@@ -85,8 +85,8 @@ ATUCWatcher::ATUCWatcher()
     VisionCone->SetLightColor(WatcherCalm);
     VisionCone->Intensity = 9000.0f;
     VisionCone->AttenuationRadius = 520.0f;
-    VisionCone->InnerConeAngle = 40.0f;
-    VisionCone->OuterConeAngle = 50.0f;
+    VisionCone->InnerConeAngle = 42.0f;
+    VisionCone->OuterConeAngle = 52.0f;
 }
 
 void ATUCWatcher::BeginPlay()
@@ -184,7 +184,9 @@ void ATUCWatcher::UpdatePatrol(float DeltaSeconds)
     const FVector Heading = (Target - NewLocation).GetSafeNormal2D();
     if (!Heading.IsNearlyZero())
     {
-        SetActorRotation(FMath::RInterpTo(GetActorRotation(), Heading.Rotation(), DeltaSeconds, 5.0f));
+        SweepPhase += DeltaSeconds * 1.5f;
+        const FRotator Desired = Heading.Rotation() + FRotator(0.0f, FMath::Sin(SweepPhase) * SweepDegrees, 0.0f);
+        SetActorRotation(FMath::RInterpTo(GetActorRotation(), Desired, DeltaSeconds, 6.0f));
     }
 
     if (FVector::DistSquared(NewLocation, Target) < FMath::Square(15.0f))
@@ -238,7 +240,7 @@ void ATUCWatcher::UpdateDetection(float DeltaSeconds)
     }
     else
     {
-        Detection = FMath::Max(0.0f, Detection - DeltaSeconds * 0.8f);
+        Detection = FMath::Max(0.0f, Detection - DeltaSeconds * 0.5f);
     }
 
     const FLinearColor Current = FMath::Lerp(WatcherCalm, WatcherAlert, Detection);

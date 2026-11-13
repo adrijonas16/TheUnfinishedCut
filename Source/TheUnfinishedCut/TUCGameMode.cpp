@@ -75,14 +75,18 @@ void ATUCGameMode::SpawnWatchers()
     {
         { 1250.0f, 0, 2 },   // Cine: vigila el proyector y el conducto
         { 2400.0f, 3, 4 },   // Años 80: entre el rollo y la tarima
+        { 2650.0f, 3, 4 },   // Años 80: segundo vigilante frente a la tarima (más difícil)
         { 3650.0f, 5, 7 },   // Futuro: cruza la ruta terminal → ducto → proyector
         { 5150.0f, 8, 8 },   // Archivo: custodia el núcleo
     };
 
+    int32 SpecIndex = 0;
     for (const FWatcherSpec& Spec : Specs)
     {
-        const FVector PatrolA(Spec.X, -330.0f, 55.0f);
-        const FVector PatrolB(Spec.X, 330.0f, 55.0f);
+        // Los vigilantes vecinos arrancan en lados opuestos para no moverse sincronizados.
+        const float Side = (SpecIndex++ % 2 == 0) ? 1.0f : -1.0f;
+        const FVector PatrolA(Spec.X, -330.0f * Side, 55.0f);
+        const FVector PatrolB(Spec.X, 330.0f * Side, 55.0f);
         if (ATUCWatcher* Watcher = GetWorld()->SpawnActor<ATUCWatcher>(PatrolA, FRotator::ZeroRotator))
         {
             Watcher->ConfigurePatrol(PatrolA, PatrolB, Spec.MinStep, Spec.MaxStep);

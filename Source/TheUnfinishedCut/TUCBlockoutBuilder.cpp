@@ -51,7 +51,8 @@ namespace
 
 ATUCBlockoutBuilder::ATUCBlockoutBuilder()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.TickInterval = 0.05f;
 
     SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
     SceneRoot->SetMobility(EComponentMobility::Movable);
@@ -129,7 +130,11 @@ void ATUCBlockoutBuilder::BuildWorld(ATUCPuzzleDirector* Director)
 
     for (const FTUCLayoutLight& Entry : GTUCLayoutLights)
     {
-        SpawnLight(FVector(Entry.X, Entry.Y, Entry.Z), FLinearColor(Entry.R, Entry.G, Entry.B), Entry.Intensity, Entry.Radius);
+        if (APointLight* Light = SpawnLight(FVector(Entry.X, Entry.Y, Entry.Z), FLinearColor(Entry.R, Entry.G, Entry.B), Entry.Intensity, Entry.Radius))
+        {
+            AnimatedLights.Add(Light);
+            AnimatedLightBase.Add(Entry.Intensity);
+        }
     }
     for (const FTUCLayoutSign& Entry : GTUCLayoutSigns)
     {
@@ -233,6 +238,7 @@ UInstancedStaticMeshComponent* ATUCBlockoutBuilder::GetVisualComponent(const TCH
         Instances = NewObject<UInstancedStaticMeshComponent>(this, Key);
         Instances->SetMobility(EComponentMobility::Movable);
         Instances->SetStaticMesh(KitMesh);
+        TUCAssets::ApplyKitMaterials(Instances, KitMesh);
         Instances->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         Instances->SetCanEverAffectNavigation(false);
         Instances->SetupAttachment(SceneRoot);
@@ -297,6 +303,7 @@ AActor* ATUCBlockoutBuilder::SpawnKitActor(const TCHAR* AssetName, const FVector
     {
         Prop->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
         Prop->GetStaticMeshComponent()->SetStaticMesh(KitMesh);
+        TUCAssets::ApplyKitMaterials(Prop->GetStaticMeshComponent(), KitMesh);
     }
     return Prop;
 }
@@ -309,6 +316,26 @@ ATUCInteractionActor* ATUCBlockoutBuilder::SpawnInteraction(ATUCPuzzleDirector* 
         Interaction->Configure(Director, Kind, Color, Scale, FragmentId, bKitAvailable ? KitAsset : nullptr, Yaw);
     }
     return Interaction;
+}
+
+void ATUCBlockoutBuilder::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+    AnimTime += DeltaSeconds;
+    for (int32 Index = 0; Index < AnimatedLights.Num(); ++Index)
+    {
+        APointLight* Light = AnimatedLights[Index];
+        if (!Light || !AnimatedLightBase.IsValidIndex(Index))
+        {
+            continue;
+        }
+        // Cada luz con su propio ritmo: latido suave y, de vez en cuando, un parpadeo de "cine embrujado".
+        const float Phase = Index * 1.731f;
+        const float Breath = 0.85f + 0.15f * FMath::Sin(AnimTime * (1.2f + 0.3f * (Index % 3)) + Phase);
+        const float FlickerWave = FMath::Sin(AnimTime * 23.0f + Phase * 7.0f) * FMath::Sin(AnimTime * 0.37f + Phase);
+        const float Flicker = (Index % 4 == 1 && FlickerWave > 0.82f) ? 0.25f : 1.0f;
+        Light->PointLightComponent->SetIntensity(AnimatedLightBase[Index] * Breath * Flicker);
+    }
 }
 
 APointLight* ATUCBlockoutBuilder::SpawnLight(const FVector& Location, const FLinearColor& Color, float Intensity, float Radius)

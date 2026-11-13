@@ -66,6 +66,13 @@ private:
     bool bConsumed = false;
     float BaseLightIntensity = 1800.0f;
 
+    // Animación: los fragmentos giran y flotan; el objetivo actual "respira".
+    bool bAnimInitialized = false;
+    FVector MeshBaseLocation = FVector::ZeroVector;
+    FVector MeshBaseScale = FVector::OneVector;
+    FRotator MeshBaseRotation = FRotator::ZeroRotator;
+    float SpinYaw = 0.0f;
+
     ATUCPuzzleDirector* ResolveDirector() const;
     FText GetBaseLabel() const;
     bool TryUseImportedProjector(const FVector& RequestedScale);

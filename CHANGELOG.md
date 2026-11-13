@@ -104,3 +104,9 @@ HUD:
 ## 1.7 — ilustración del menú (13 nov 2026)
 - Fondo del menú, prólogo y "cómo jugar" con ilustración estilo animación generada con IA (Meshy, 18 créditos).
 - Retratos de Ivo y Nilo en "cómo jugar" tomados de la ilustración.
+
+## 1.8 — materiales, letra de juego, más reto y más vida (13 nov 2026)
+- Materiales: el juego asigna en tiempo de ejecución el material de cada pieza por nombre de slot (corrige los cuadros grises/blancos del material por defecto). La importación reconstruye siempre el material maestro, usa el orden del manifiesto si el nombre del slot no coincide y deja un informe en `Saved/TUC_ImportReport.txt` (con aviso en pantalla si hubo problemas).
+- Letra de juego en todo el HUD (Lilita One desde atlas, con contorno) y títulos con Luckiest Guy.
+- Más difícil: vigilantes más rápidos, con más alcance, que barren con la cabeza, detectan antes y olvidan más lento; segundo vigilante frente a la tarima de los 80.
+- Más animado: menú con zoom lento y motas de luz, botón seleccionado que late, tarjeta de objetivo que entra deslizando con "¡NUEVO OBJETIVO!", aviso [E] que aparece con rebote, bordes rojos que laten al ser visto, fragmentos que giran y flotan, objetivo que "respira", luces que laten y parpadean, balanceo de cámara de Ivo al caminar.

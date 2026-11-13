@@ -12,6 +12,7 @@
 #include "Engine/Font.h"
 #include "Engine/Texture2D.h"
 #include "TUCAssets.h"
+#include "TUCFontData.h"
 
 namespace
 {
@@ -23,6 +24,24 @@ namespace
     const FLinearColor HudMuted(0.72f, 0.76f, 0.84f);
     const FLinearColor HudPanel(0.07f, 0.035f, 0.15f, 0.84f);
     const FLinearColor HudPanelBorder(0.67f, 0.55f, 1.0f, 0.55f);
+
+    const FTUCGlyph* FindGlyph(uint32 Code)
+    {
+        static TMap<uint32, int32> Lookup;
+        if (Lookup.Num() == 0)
+        {
+            for (int32 Index = 0; Index < UE_ARRAY_COUNT(GTUCGlyphs); ++Index)
+            {
+                Lookup.Add(GTUCGlyphs[Index].Code, Index);
+            }
+        }
+        if (const int32* Found = Lookup.Find(Code))
+        {
+            return &GTUCGlyphs[*Found];
+        }
+        const int32* Fallback = Lookup.Find(static_cast<uint32>('?'));
+        return Fallback ? &GTUCGlyphs[*Fallback] : nullptr;
+    }
 
     FLinearColor ColorFor(ETUCCharacterType Type)
     {
@@ -55,8 +74,27 @@ float ATUCHUD::FontScale(float Size) const
     return BaseFontHeight > 1.0f ? TargetPixels / BaseFontHeight : 1.0f;
 }
 
+float ATUCHUD::BitmapScale(float Size) const
+{
+    return Size * 1.3333f * UIScale / (GTUCFontAscent + GTUCFontDescent);
+}
+
 FVector2D ATUCHUD::Measure(const FString& Text, float Size) const
 {
+    if (FontAtlas)
+    {
+        const float Scale = BitmapScale(Size);
+        float Width = 0.0f;
+        for (const TCHAR Char : Text)
+        {
+            if (const FTUCGlyph* Glyph = FindGlyph(static_cast<uint32>(Char)))
+            {
+                Width += Glyph->Advance * Scale;
+            }
+        }
+        return FVector2D(Width, (GTUCFontAscent + GTUCFontDescent) * Scale);
+    }
+
     float Width = 0.0f;
     float Height = 0.0f;
     if (Canvas && HudFont())
@@ -66,10 +104,61 @@ FVector2D ATUCHUD::Measure(const FString& Text, float Size) const
     return FVector2D(Width, Height);
 }
 
+void ATUCHUD::DrawBitmapPass(const FString& Text, float X, float Baseline, float Scale, const FLinearColor& Color)
+{
+    float PenX = X;
+    for (const TCHAR Char : Text)
+    {
+        const FTUCGlyph* Glyph = FindGlyph(static_cast<uint32>(Char));
+        if (!Glyph)
+        {
+            continue;
+        }
+        if (Glyph->W > 0 && Glyph->H > 0)
+        {
+            DrawTexture(FontAtlas, PenX + Glyph->OffX * Scale, Baseline + Glyph->OffY * Scale, Glyph->W * Scale, Glyph->H * Scale,
+                Glyph->X / GTUCFontAtlasSize, Glyph->Y / GTUCFontAtlasSize, Glyph->W / GTUCFontAtlasSize, Glyph->H / GTUCFontAtlasSize,
+                Color, BLEND_Translucent);
+        }
+        PenX += Glyph->Advance * Scale;
+    }
+}
+
 float ATUCHUD::DrawTextAt(const FString& Text, float X, float Y, const FLinearColor& Color, float Size, bool bBold, float HAlign)
 {
+    if (!Canvas || Text.IsEmpty())
+    {
+        return 0.0f;
+    }
+
+    if (FontAtlas)
+    {
+        // Fuente de juego (Lilita One) desde el atlas, con contorno oscuro para leerse sobre cualquier fondo.
+        const FVector2D TextSize = Measure(Text, Size);
+        const float Scale = BitmapScale(Size);
+        const float DrawX = X - static_cast<float>(TextSize.X) * HAlign;
+        const float Baseline = Y + GTUCFontAscent * Scale;
+        const float O = FMath::Max(1.5f, (bBold ? 2.6f : 2.0f) * UIScale);
+        // Texto oscuro (sobre botones o etiquetas de color): sin contorno, que si no se empasta.
+        if (Color.GetLuminance() < 0.25f)
+        {
+            DrawBitmapPass(Text, DrawX, Baseline, Scale, Color);
+            return static_cast<float>(TextSize.Y);
+        }
+        const FLinearColor Outline(0.03f, 0.01f, 0.08f, Color.A * 0.92f);
+        DrawBitmapPass(Text, DrawX + O * 1.4f, Baseline + O * 1.6f, Scale, FLinearColor(0.0f, 0.0f, 0.0f, Color.A * 0.55f));
+        const float Offsets[8][2] = { { -O, 0.0f }, { O, 0.0f }, { 0.0f, -O }, { 0.0f, O },
+            { -O * 0.7f, -O * 0.7f }, { O * 0.7f, -O * 0.7f }, { -O * 0.7f, O * 0.7f }, { O * 0.7f, O * 0.7f } };
+        for (const auto& Offset : Offsets)
+        {
+            DrawBitmapPass(Text, DrawX + Offset[0], Baseline + Offset[1], Scale, Outline);
+        }
+        DrawBitmapPass(Text, DrawX, Baseline, Scale, Color);
+        return static_cast<float>(TextSize.Y);
+    }
+
     UFont* Font = HudFont();
-    if (!Canvas || !Font || Text.IsEmpty())
+    if (!Font)
     {
         return 0.0f;
     }
@@ -86,7 +175,6 @@ float ATUCHUD::DrawTextAt(const FString& Text, float X, float Y, const FLinearCo
     Canvas->DrawText(Font, Text, DrawX, Y, Scale, Scale, RenderInfo);
     if (bBold)
     {
-        // Negrita simulada: segunda pasada desplazada un píxel.
         Canvas->DrawText(Font, Text, DrawX + FMath::Max(1.0f, UIScale), Y, Scale, Scale, RenderInfo);
     }
     return Height;
@@ -167,6 +255,7 @@ void ATUCHUD::DrawHUD()
 
     UIScale = FMath::Clamp(Canvas->ClipY / 1080.0f, 0.7f, 2.0f);
     MenuItemRects.Reset();
+    FontAtlas = GetUITexture(TEXT("T_UI_FontAtlas"));
     if (UFont* Font = HudFont())
     {
         float BaseWidth = 0.0f;
@@ -478,7 +567,12 @@ bool ATUCHUD::DrawImageButtons(ATUCPlayerController* Controller, float X, float 
             Controller->SetMenuSelection(Index);
         }
         const bool bSelected = Controller->GetMenuSelection() == Index;
-        DrawDesignImage(GetUITexture(ButtonTextureName(Screen, Items[Index].Action, bSelected)), X - 20.0f, Y - 20.0f, 600.0f, 124.0f);
+        const float Time = GetWorld() ? static_cast<float>(GetWorld()->GetRealTimeSeconds()) : 0.0f;
+        const float Grow = bSelected ? 1.0f + 0.03f * FMath::Sin(Time * 5.0f) + 0.02f : 1.0f;
+        const float BW = 600.0f * Grow;
+        const float BH = 124.0f * Grow;
+        DrawDesignImage(GetUITexture(ButtonTextureName(Screen, Items[Index].Action, bSelected)),
+            X + 280.0f - BW * 0.5f, Y + 42.0f - BH * 0.5f, BW, BH);
         if (!Items[Index].Hint.IsEmpty() && Items[Index].Action == ETUCMenuAction::Continue)
         {
             const FVector2D HintPos = ToScreen(X + 580.0f, Y + 26.0f);
@@ -487,6 +581,34 @@ bool ATUCHUD::DrawImageButtons(ATUCPlayerController* Controller, float X, float 
         Y += Step;
     }
     return true;
+}
+
+void ATUCHUD::DrawMenuBackground(UTexture2D* Texture, float Darken)
+{
+    // Ken Burns lento + motas de luz flotando: el menú se siente vivo.
+    const float Time = GetWorld() ? static_cast<float>(GetWorld()->GetRealTimeSeconds()) : 0.0f;
+    const float Zoom = 1.035f + 0.025f * FMath::Sin(Time * 0.12f);
+    const float PanX = 18.0f * FMath::Sin(Time * 0.07f);
+    const float PanY = 10.0f * FMath::Cos(Time * 0.09f);
+    DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, 1.0f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+    DrawDesignImage(Texture, 960.0f - 960.0f * Zoom + PanX, 540.0f - 540.0f * Zoom + PanY, 1920.0f * Zoom, 1080.0f * Zoom);
+    if (Darken > 0.0f)
+    {
+        DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, Darken), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+    }
+    for (int32 Index = 0; Index < 46; ++Index)
+    {
+        const float Seed = Index * 12.9898f;
+        const float X0 = FMath::Frac(FMath::Sin(Seed) * 43758.5453f) * 1920.0f;
+        const float Speed = 12.0f + FMath::Frac(FMath::Sin(Seed * 1.7f) * 15731.743f) * 28.0f;
+        const float Y = 1080.0f - FMath::Fmod(Time * Speed + Index * 97.0f, 1180.0f);
+        const float X = X0 + 26.0f * FMath::Sin(Time * 0.6f + Index);
+        const float Twinkle = 0.35f + 0.35f * FMath::Sin(Time * 2.0f + Index * 1.3f);
+        const FLinearColor Color = (Index % 3 == 0) ? FLinearColor(1.0f, 0.8f, 0.4f, Twinkle) : FLinearColor(0.55f, 1.0f, 0.85f, Twinkle);
+        const FVector2D P = ToScreen(X, Y);
+        const float Size = (2.0f + (Index % 4)) * DesignScale;
+        DrawRect(Color, static_cast<float>(P.X), static_cast<float>(P.Y), Size, Size);
+    }
 }
 
 void ATUCHUD::DrawMenuScreen(ATUCPlayerController* Controller, const ATUCPuzzleDirector* Director)
@@ -527,14 +649,12 @@ void ATUCHUD::DrawMenuScreen(ATUCPlayerController* Controller, const ATUCPuzzleD
             bButtonsOk = DrawImageButtons(Controller, 680.0f, 978.0f, 100.0f);
             break;
         case ETUCMenuScreen::Prologue:
-            DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, 1.0f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
-            DrawDesignImage(BackgroundTexture, 0.0f, 0.0f, 1920.0f, 1080.0f);
+            DrawMenuBackground(BackgroundTexture, 0.0f);
             bButtonsOk = DrawImageButtons(Controller, 680.0f, 790.0f, 100.0f);
             break;
         default:
         {
-            DrawRect(FLinearColor(0.02f, 0.01f, 0.05f, 1.0f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
-            DrawDesignImage(BackgroundTexture, 0.0f, 0.0f, 1920.0f, 1080.0f);
+            DrawMenuBackground(BackgroundTexture, 0.0f);
             bButtonsOk = DrawImageButtons(Controller, 100.0f, 560.0f, 100.0f);
             const FVector2D Hint = ToScreen(110.0f, 1000.0f);
             DrawTextAt(TEXT("Ratón o flechas para elegir  ·  clic o ENTER para aceptar"), static_cast<float>(Hint.X), static_cast<float>(Hint.Y),
@@ -605,10 +725,30 @@ void ATUCHUD::DrawGameplay(ATUCPlayerController* Controller, const ATUCPuzzleDir
         const float CardH = Pad * 2.0f + 30.0f * UIScale + 26.0f * UIScale + ObjH + 10.0f * UIScale + DetH
             + (bHasRequired ? 46.0f * UIScale : 0.0f) + (bWrongCharacter ? 40.0f * UIScale : 0.0f) + 28.0f * UIScale;
 
-        DrawPanel(Margin, Margin, CardW, CardH, HudPanel, HudPanelBorder);
-        DrawRect(HudYellow, Margin, Margin, 6.0f * UIScale, CardH);
+        // Animación al cambiar de objetivo: la tarjeta entra deslizando y el borde destella.
+        if (Objective != LastObjective)
+        {
+            LastObjective = Objective;
+            ObjectiveChangedAt = Now;
+        }
+        const float SinceChange = static_cast<float>(Now - ObjectiveChangedAt);
+        const float Slide = FMath::Clamp(SinceChange / 0.45f, 0.0f, 1.0f);
+        const float Ease = 1.0f - FMath::Pow(1.0f - Slide, 3.0f);
+        const float CardX = Margin - (1.0f - Ease) * (CardW + Margin);
+        const float Flash = SinceChange < 2.5f ? (0.5f + 0.5f * FMath::Sin(SinceChange * 12.0f)) * (1.0f - SinceChange / 2.5f) : 0.0f;
+        const FLinearColor Border = FMath::Lerp(HudPanelBorder, FLinearColor(1.0f, 0.85f, 0.3f, 1.0f), Flash);
 
-        const float X = Margin + Pad;
+        DrawPanel(CardX, Margin, CardW, CardH, HudPanel, Border, 2.0f + 2.0f * Flash);
+        DrawRect(HudYellow, CardX, Margin, 6.0f * UIScale, CardH);
+        if (SinceChange < 2.6f && SinceChange > 0.2f)
+        {
+            const float Pop = FMath::Clamp((SinceChange - 0.2f) / 0.25f, 0.0f, 1.0f);
+            const float Fade = FMath::Clamp((2.6f - SinceChange) / 0.4f, 0.0f, 1.0f);
+            DrawTextAt(TEXT("¡NUEVO OBJETIVO!"), CardX + CardW + 18.0f * UIScale, Margin + 10.0f * UIScale,
+                FLinearColor(1.0f, 0.85f, 0.3f, Fade), 20.0f + 10.0f * (1.0f - Pop), true);
+        }
+
+        const float X = CardX + Pad;
         float Y = Margin + Pad;
         Y += DrawTextAt(Director->GetChapterTitle().ToString(), X, Y, HudYellow, 16.0f, true) + 4.0f * UIScale;
         Y += DrawTextAt(TEXT("OBJETIVO"), X, Y, HudMuted, 13.0f, true) + 4.0f * UIScale;
@@ -669,7 +809,15 @@ void ATUCHUD::DrawGameplay(ATUCPlayerController* Controller, const ATUCPuzzleDir
         if (Character->GetFocusedInteraction(Prompt, bCanInteract))
         {
             const FString PromptText = Prompt.ToString();
-            const FVector2D Size = Measure(PromptText, MakeFont(24.0f, true));
+            if (PromptText != LastPrompt)
+            {
+                LastPrompt = PromptText;
+                PromptShownAt = Now;
+            }
+            const float PromptAge = static_cast<float>(Now - PromptShownAt);
+            const float PromptPop = 1.0f + 0.25f * FMath::Max(0.0f, 1.0f - PromptAge / 0.18f);
+            const float PromptSize = 24.0f * PromptPop;
+            const FVector2D Size = Measure(PromptText, MakeFont(PromptSize, true));
             const float KeyW = bCanInteract ? 56.0f * UIScale : 0.0f;
             const float BoxWidth = static_cast<float>(Size.X) + KeyW + 48.0f * UIScale;
             const float BoxHeight = static_cast<float>(Size.Y) + 26.0f * UIScale;
@@ -683,7 +831,11 @@ void ATUCHUD::DrawGameplay(ATUCPlayerController* Controller, const ATUCPuzzleDir
                 DrawTextAt(TEXT("E"), TextX + 20.0f * UIScale, PY + BoxHeight * 0.5f - 17.0f * UIScale, FLinearColor(0.02f, 0.02f, 0.03f), 22.0f, true, 0.5f);
                 TextX += KeyW;
             }
-            DrawTextAt(PromptText, TextX, PY + 13.0f * UIScale, bCanInteract ? FLinearColor::White : HudMuted, 24.0f, true);
+            DrawTextAt(PromptText, TextX, PY + 13.0f * UIScale, bCanInteract ? FLinearColor::White : HudMuted, PromptSize, true);
+        }
+        else
+        {
+            LastPrompt.Reset();
         }
     }
 
@@ -763,6 +915,22 @@ void ATUCHUD::DrawGameplay(ATUCPlayerController* Controller, const ATUCPuzzleDir
     }
     if (MaxDetection > 0.02f)
     {
+        // Bordes rojos que laten más fuerte cuanto más cerca estás de ser detectado.
+        const float Edge = FMath::Min(W, H) * 0.16f;
+        const int32 Bands = 10;
+        for (int32 Band = 0; Band < Bands; ++Band)
+        {
+            const float T = static_cast<float>(Band) / Bands;
+            const float A = MaxDetection * Pulse * 0.55f * (1.0f - T) / Bands * 2.0f;
+            const FLinearColor Red(0.9f, 0.02f, 0.05f, A);
+            const float D = Edge * T;
+            const float Thick = Edge / Bands;
+            DrawRect(Red, D, D, W - 2.0f * D, Thick);
+            DrawRect(Red, D, H - D - Thick, W - 2.0f * D, Thick);
+            DrawRect(Red, D, D + Thick, Thick, H - 2.0f * D - 2.0f * Thick);
+            DrawRect(Red, W - D - Thick, D + Thick, Thick, H - 2.0f * D - 2.0f * Thick);
+        }
+
         const float BarWidth = 460.0f * UIScale;
         const float BarHeight = 16.0f * UIScale;
         const float BarY = H * 0.08f;

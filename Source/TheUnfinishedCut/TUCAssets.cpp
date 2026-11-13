@@ -2,7 +2,9 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/Material.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Components/MeshComponent.h"
 #include "Misc/PackageName.h"
 
 namespace TUCAssets
@@ -53,7 +55,73 @@ namespace TUCAssets
         Component->SetRelativeRotation(YawFix);
         Component->SetRelativeLocation(FVector(-RotatedOrigin.X, -RotatedOrigin.Y, FloorZ - MeshBottom));
         Component->SetVisibility(true);
+        ApplyKitMaterials(Component, Mesh);
         return true;
+    }
+
+    namespace
+    {
+        UMaterialInterface* LoadMaterial(const FString& PackagePath)
+        {
+            return LoadAsset<UMaterialInterface>(*PackagePath);
+        }
+
+        FString CleanSlotName(FString Name)
+        {
+            // "M_Brick.001", "M_Brick_001", "M_Brick_skin" (Blender/FBX) -> "M_Brick"
+            int32 Dot = INDEX_NONE;
+            if (Name.FindChar(TEXT('.'), Dot))
+            {
+                Name = Name.Left(Dot);
+            }
+            int32 Under = INDEX_NONE;
+            if (Name.FindLastChar(TEXT('_'), Under) && Under > 0)
+            {
+                const FString Tail = Name.Mid(Under + 1);
+                if (Tail.IsNumeric() || Tail.Equals(TEXT("skin"), ESearchCase::IgnoreCase))
+                {
+                    Name = Name.Left(Under);
+                }
+            }
+            return Name;
+        }
+    }
+
+    int32 ApplyKitMaterials(UMeshComponent* Component, const UStaticMesh* Mesh)
+    {
+        if (!Component || !Mesh)
+        {
+            return 0;
+        }
+        const UMaterial* DefaultMaterial = UMaterial::GetDefaultMaterial(MD_Surface);
+        const TArray<FStaticMaterial>& Slots = Mesh->GetStaticMaterials();
+        int32 Assigned = 0;
+        for (int32 Index = 0; Index < Slots.Num(); ++Index)
+        {
+            const FString Slot = CleanSlotName(Slots[Index].MaterialSlotName.ToString());
+
+            UMaterialInterface* Material = nullptr;
+            if (Slot.StartsWith(TEXT("M_")))
+            {
+                Material = LoadMaterial(FString::Printf(TEXT("/Game/TUC/Kit/Materials/MI_%s"), *Slot));
+            }
+            if (!Material)
+            {
+                const UMaterialInterface* Current = Slots[Index].MaterialInterface;
+                const bool bIsDefault = !Current || Current->GetMaterial() == DefaultMaterial;
+                if (bIsDefault)
+                {
+                    // Reemplazos Meshy: un solo material PBR por malla.
+                    Material = LoadMaterial(FString::Printf(TEXT("/Game/TUC/Kit/Overrides/M_%s"), *Mesh->GetName()));
+                }
+            }
+            if (Material)
+            {
+                Component->SetMaterial(Index, Material);
+                ++Assigned;
+            }
+        }
+        return Assigned;
     }
 
     UMaterialInstanceDynamic* TintAccent(UStaticMeshComponent* Component, const FLinearColor& Color)

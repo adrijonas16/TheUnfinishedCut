@@ -157,4 +157,15 @@ void ATUCIvoCharacter::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
     UpdateBodyAnimation();
+
+    // Balanceo de cámara al caminar (primera persona más viva).
+    if (FirstPersonCamera)
+    {
+        const float Speed = GetVelocity().Size2D();
+        const float Alpha = FMath::Clamp(Speed / 450.0f, 0.0f, 1.0f);
+        HeadBobPhase += DeltaSeconds * (6.0f + 6.0f * Alpha);
+        const float BobZ = FMath::Sin(HeadBobPhase * 2.0f) * 2.4f * Alpha;
+        const float BobY = FMath::Sin(HeadBobPhase) * 1.4f * Alpha;
+        FirstPersonCamera->SetRelativeLocation(FVector(-10.0f, BobY, 72.0f + BobZ));
+    }
 }

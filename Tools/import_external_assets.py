@@ -27,7 +27,7 @@ KIT_ROOT = "/Game/TUC/Kit"
 SURF_DIR = KIT_DIR / "Surfaces"
 
 # Debe coincidir con IMPORT_VERSION de Content/Python/init_unreal.py.
-IMPORT_VERSION = "5"
+IMPORT_VERSION = "6"
 
 # UE 5.5+ importa FBX con Interchange, que ignora las opciones FbxImportUI (escala, esqueleto,
 # animaciones, materiales). Forzar el importador FBX clásico para que todo salga igual en 5.1–5.7.
@@ -60,8 +60,24 @@ MESHY_ASSETS = [
 ]
 
 
+REPORT = []
+
+
 def log(message):
     unreal.log(f"TUC: {message}")
+    REPORT.append(message)
+
+
+def problem(message):
+    unreal.log_warning(f"TUC: {message}")
+    REPORT.append("PROBLEMA: " + message)
+
+
+def engine_texture(path="/Engine/EngineResources/WhiteSquareTexture"):
+    try:
+        return unreal.load_asset(path)
+    except Exception:
+        return None
 
 
 # ───────────────────────── utilidades ─────────────────────────
@@ -123,12 +139,12 @@ def import_mesh(fbx, destination, name):
 
 def import_texture(source, destination, kind="color"):
     if not source.exists():
-        unreal.log_warning(f"TUC: falta la textura {source}")
+        problem(f"falta la textura {source}")
         return None
     paths = run_import(source, destination)
     texture = EAL.load_asset(paths[0]) if paths else EAL.load_asset(f"{destination}/{source.stem}")
     if not isinstance(texture, unreal.Texture2D):
-        unreal.log_warning(f"TUC: no se pudo importar {source.name}")
+        problem(f"no se pudo importar {source.name}")
         return None
     if kind == "normal":
         texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
@@ -141,26 +157,33 @@ def import_texture(source, destination, kind="color"):
     return texture
 
 
-def assign_by_slot(mesh, materials):
-    """Asigna instancias de material a la malla según el nombre del slot exportado desde Blender."""
+def assign_by_slot(mesh, materials, expected=None):
+    """Asigna instancias de material por nombre de slot; si no coincide, por el orden del manifiesto."""
     slots = mesh.get_editor_property("static_materials")
+    expected = expected or []
     for index, slot in enumerate(slots):
         slot_name = str(slot.get_editor_property("material_slot_name"))
         key = slot_name.split(".")[0]
         if key not in materials and "_" in key and key.rsplit("_", 1)[-1].isdigit():
             key = key.rsplit("_", 1)[0]
         material = materials.get(key)
+        if material is None and index < len(expected):
+            material = materials.get(expected[index])
+        if material is None and len(expected) == 1:
+            material = materials.get(expected[0])
         if material:
             mesh.set_material(index, material)
         else:
-            unreal.log_warning(f"TUC: {mesh.get_name()} slot '{slot_name}' sin material")
+            problem(f"{mesh.get_name()} slot '{slot_name}' sin material")
 
 
 # ───────────────────────── kit TUC ─────────────────────────
 def build_master_material(white_texture):
     path = f"{KIT_ROOT}/Materials/M_TUC_Master"
     if EAL.does_asset_exist(path):
-        return EAL.load_asset(path)
+        # Se reconstruye siempre: una versión rota de una importación anterior dejaba todo en cuadros grises.
+        EAL.delete_asset(path)
+    white_texture = white_texture or engine_texture()
 
     material = ASSET_TOOLS.create_asset("M_TUC_Master", f"{KIT_ROOT}/Materials", unreal.Material, unreal.MaterialFactoryNew())
 
@@ -261,7 +284,7 @@ def import_surfaces():
         if "BaseColor" in textures and "Normal" in textures and "Roughness" in textures:
             result[name] = (spec, textures)
         else:
-            unreal.log_warning(f"TUC: superficie {name} incompleta, se usa la textura del kit")
+            problem(f"superficie {name} incompleta, se usa la textura del kit")
     log(f"{len(result)} superficies PBR (pisos/paredes) importadas")
     return result
 
@@ -303,7 +326,7 @@ def build_material_instance(name, spec, master, textures, surfaces=None, surface
 def import_kit():
     manifest_path = KIT_DIR / "kit_manifest.json"
     if not manifest_path.exists():
-        unreal.log_error(f"TUC: no se encontró {manifest_path}")
+        problem(f"no se encontró {manifest_path}")
         return False
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
@@ -335,9 +358,9 @@ def import_kit():
                 continue
             mesh = import_mesh(kit_fbx, f"{KIT_ROOT}/Meshes", name)
             if mesh is None:
-                unreal.log_error(f"TUC: no se pudo importar {name}")
+                problem(f"no se pudo importar {name}")
                 continue
-            assign_by_slot(mesh, materials)
+            assign_by_slot(mesh, materials, manifest["meshes"][name].get("materials"))
             EAL.save_loaded_asset(mesh)
             ok += 1
     log(f"kit: {ok}/{len(names)} mallas importadas")
@@ -383,12 +406,12 @@ def build_pbr_material(destination, name, textures):
 def import_meshy(spec):
     fbx = PROJECT_DIR / spec["fbx"]
     if not fbx.exists():
-        unreal.log_error(f"TUC: no se encontró {fbx}")
+        problem(f"no se encontró {fbx}")
         return False
     log(f"importando {fbx.name}")
     mesh = import_mesh(fbx, spec["dest"], spec["mesh"])
     if mesh is None:
-        unreal.log_error(f"TUC: la importación de {fbx.name} no produjo un Static Mesh")
+        problem(f"la importación de {fbx.name} no produjo un Static Mesh")
         return False
     tex_dir = PROJECT_DIR / spec["tex_dir"]
     tex_dest = f"{spec['dest']}/Textures"
@@ -486,7 +509,7 @@ def import_overrides():
         log(f"reemplazo realista: {name} ({info.get('source')})")
         mesh = import_mesh(fbx, f"{KIT_ROOT}/Meshes", name)
         if mesh is None:
-            unreal.log_error(f"TUC: no se pudo importar el reemplazo {name}")
+            problem(f"no se pudo importar el reemplazo {name}")
             ok = False
             continue
         tex = info.get("textures", {})
@@ -576,11 +599,13 @@ def import_ui():
         paths = run_import(png, UI_DEST)
         texture = EAL.load_asset(paths[0]) if paths else EAL.load_asset(f"{UI_DEST}/{png.stem}")
         if not isinstance(texture, unreal.Texture2D):
-            unreal.log_warning(f"TUC: no se pudo importar la imagen de interfaz {png.name}")
+            problem(f"no se pudo importar la imagen de interfaz {png.name}")
             continue
         texture.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_EDITOR_ICON)
         texture.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_UI)
-        texture.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+        # El atlas de la fuente se dibuja reducido: con mipmaps se ve suave; el resto, sin mipmaps (nítido).
+        mips = unreal.TextureMipGenSettings.TMGS_SIMPLE_AVERAGE if png.stem == "T_UI_FontAtlas" else unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS
+        texture.set_editor_property("mip_gen_settings", mips)
         texture.set_editor_property("never_stream", True)
         texture.set_editor_property("srgb", True)
         EAL.save_loaded_asset(texture)
@@ -594,14 +619,25 @@ results = [import_ui(), import_kit(), import_overrides()] + [import_meshy(spec) 
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 
 try:
+    (PROJECT_DIR / "Saved").mkdir(parents=True, exist_ok=True)
+    (PROJECT_DIR / "Saved" / "TUC_ImportReport.txt").write_text("\n".join(REPORT), encoding="utf-8")
+except Exception:
+    pass
+
+try:
     marker = PROJECT_DIR / "Saved" / "TUC_ImportVersion.txt"
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text(IMPORT_VERSION, encoding="utf-8")
 except Exception as error:
-    unreal.log_warning(f"TUC: no se pudo guardar la versión de importación: {error}")
+    problem(f"no se pudo guardar la versión de importación: {error}")
 
-if all(results):
+problems = [line for line in REPORT if line.startswith("PROBLEMA")]
+if problems:
+    unreal.EditorDialog.show_message("The Unfinished Cut — importación",
+        f"Hubo {len(problems)} problema(s). Detalle en Saved/TUC_ImportReport.txt:\n\n" + "\n".join(problems[:12]),
+        unreal.AppMsgType.OK)
+elif all(results):
     log("importación terminada. Presiona Play.")
     unreal.EditorDialog.show_message("The Unfinished Cut", "Assets importados. Ya puedes presionar Play.", unreal.AppMsgType.OK)
-else:
+if not all(results):
     unreal.log_error("TUC: algunos assets no se importaron. Revisa Window > Output Log (filtra por 'TUC').")

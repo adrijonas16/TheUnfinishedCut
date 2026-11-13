@@ -37,6 +37,8 @@ public:
     /** Restaura fragmentos y fractura para una partida nueva. */
     void ResetWorld();
 
+    virtual void Tick(float DeltaSeconds) override;
+
 private:
     UPROPERTY(VisibleAnywhere, Category="TUC|World")
     TObjectPtr<USceneComponent> SceneRoot;
@@ -58,6 +60,12 @@ private:
 
     UPROPERTY()
     TArray<TObjectPtr<ATUCInteractionActor>> Fragments;
+
+    /** Luces del decorado que parpadean o laten (farolas, neones). */
+    UPROPERTY()
+    TArray<TObjectPtr<APointLight>> AnimatedLights;
+    TArray<float> AnimatedLightBase;
+    float AnimTime = 0.0f;
 
     bool bBuilt = false;
     bool bKitAvailable = false;

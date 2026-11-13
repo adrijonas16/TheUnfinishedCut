@@ -205,6 +205,29 @@ void ATUCInteractionActor::Tick(float DeltaSeconds)
         }
     }
     AccentLight->SetIntensity(BaseLightIntensity * Multiplier);
+
+    if (Mesh && Mesh->IsVisible())
+    {
+        if (!bAnimInitialized)
+        {
+            bAnimInitialized = true;
+            MeshBaseLocation = Mesh->GetRelativeLocation();
+            MeshBaseScale = Mesh->GetRelativeScale3D();
+            MeshBaseRotation = Mesh->GetRelativeRotation();
+        }
+        if (InteractionKind == ETUCInteractionKind::MemoryFragment)
+        {
+            SpinYaw = FMath::Fmod(SpinYaw + DeltaSeconds * 70.0f, 360.0f);
+            Mesh->SetRelativeRotation(MeshBaseRotation + FRotator(0.0f, SpinYaw, 0.0f));
+            Mesh->SetRelativeLocation(MeshBaseLocation + FVector(0.0f, 0.0f, 8.0f + 8.0f * FMath::Sin(Time * 2.2f)));
+        }
+        else
+        {
+            const bool bCurrent = CurrentDirector->IsCurrentObjective(InteractionKind);
+            const float Breath = bCurrent ? 1.0f + 0.035f * FMath::Sin(Time * 4.0f) : 1.0f;
+            Mesh->SetRelativeScale3D(MeshBaseScale * Breath);
+        }
+    }
 }
 
 bool ATUCInteractionActor::CanInteract_Implementation(ATUCCharacterBase* Interactor) const
