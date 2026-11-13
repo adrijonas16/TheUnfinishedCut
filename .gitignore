@@ -1,0 +1,23 @@
+# Unreal generated
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+.idea/
+*.sln
+*.VC.db
+*.opensdf
+*.sdf
+*.suo
+Build/
+Packaged/
+
+# Raw Meshy community downloads (huge, >100 MB some). The normalized,
+# game-ready copies live in ExternalAssets/TUC_Kit/Overrides.
+ExternalAssets/Meshy/Community/*
+!ExternalAssets/Meshy/Community/Cat/
+ExternalAssets/Meshy/Nilo_Base/
+ExternalAssets/Meshy/Retro_Projector/
+ExternalAssets/Meshy/Ivo_Animated/*.zip

@@ -1,0 +1,36 @@
+THE UNFINISHED CUT v1.2 — PRIMERA APERTURA
+
+Antes de abrir: lee REVISION_v1.1.md (qué se corrigió y la lista de comprobación).
+
+1. Extrae todo el ZIP en una carpeta corta, por ejemplo C:\Juegos\TUC.
+2. Clic derecho en TheUnfinishedCut.uproject > Generate Visual Studio project files.
+3. Abre el .sln y compila "Development Editor | Win64".
+   (Requiere Unreal Engine 5.1 o superior y Visual Studio 2022 con "Game development with C++".)
+4. Abre TheUnfinishedCut.uproject. Si pregunta por la versión, elige tu UE5.
+5. Presiona PLAY y luego ENTER en la portada.
+
+El escenario se construye solo al iniciar. No hace falta colocar actores ni Blueprints.
+
+Si aparece un error:
+- No borres carpetas ni cambies código.
+- Copia el primer error de Visual Studio o adjunta Saved/Logs/TheUnfinishedCut.log.
+
+La primera vez que abras el editor se importan solos todos los assets (1-2 minutos, sale una barra
+de progreso y al final el mensaje "Assets importados"). Si no ocurre:
+Tools > Execute Python Script > Tools/import_external_assets.py
+Vistas previas de cómo debe verse: Docs/Previews/Kit
+
+CONTROLES (teclado / mando)
+WASD / stick izq.     moverse
+Ratón / stick der.    mirar
+E / R2 / A-Cruz       interactuar
+TAB / L1              cambiar entre Ivo y Nilo
+F o Q / Triángulo-Y   compañero: seguir / esperar
+P / Options           pausa
+ENTER / Options       empezar en la portada
+BACKSPACE / Share     nueva partida (borra el guardado)
+
+RECORRIDO
+Cuatro capítulos, tres fragmentos del Ancla opcionales y tres finales (A, B y C).
+La pieza que hace avanzar la historia pulsa. Si algo no responde, el texto de abajo dice por qué.
+Guía completa: CAMPAIGN_WALKTHROUGH.md

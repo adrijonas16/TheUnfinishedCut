@@ -1,0 +1,339 @@
+{
+  "SM_ArcadeCabinet": {
+    "faces": 19999,
+    "size_m": [
+      0.929,
+      0.743,
+      1.95
+    ],
+    "bounds_cm": [
+      [
+        -46.5,
+        -37.1,
+        0.0
+      ],
+      [
+        46.5,
+        37.1,
+        195.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_ArcadeCabinet_BaseColor.png",
+      "Normal": "SM_ArcadeCabinet_Normal.png",
+      "Roughness": "SM_ArcadeCabinet_Roughness.png",
+      "Metallic": "SM_ArcadeCabinet_Metallic.png"
+    },
+    "source": "Arcade"
+  },
+  "SM_Barrier": {
+    "faces": 12000,
+    "size_m": [
+      0.321,
+      1.8,
+      0.706
+    ],
+    "bounds_cm": [
+      [
+        -16.0,
+        -90.0,
+        0.0
+      ],
+      [
+        16.0,
+        90.0,
+        70.6
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Barrier_BaseColor.png"
+    },
+    "source": "Barrier"
+  },
+  "SM_Hydrant": {
+    "faces": 12000,
+    "size_m": [
+      0.503,
+      0.539,
+      0.75
+    ],
+    "bounds_cm": [
+      [
+        -25.1,
+        -26.9,
+        0.0
+      ],
+      [
+        25.1,
+        26.9,
+        75.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Hydrant_BaseColor.png",
+      "Normal": "SM_Hydrant_Normal.png",
+      "Roughness": "SM_Hydrant_Roughness.png",
+      "Metallic": "SM_Hydrant_Metallic.png"
+    },
+    "source": "Hydrant"
+  },
+  "SM_Jukebox": {
+    "faces": 20000,
+    "size_m": [
+      0.724,
+      0.959,
+      1.6
+    ],
+    "bounds_cm": [
+      [
+        -36.2,
+        -47.9,
+        0.0
+      ],
+      [
+        36.2,
+        47.9,
+        160.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Jukebox_BaseColor.png"
+    },
+    "source": "Jukebox"
+  },
+  "SM_StreetLamp": {
+    "faces": 14999,
+    "size_m": [
+      2.081,
+      0.657,
+      4.4
+    ],
+    "bounds_cm": [
+      [
+        -8.0,
+        -32.9,
+        0.0
+      ],
+      [
+        200.1,
+        32.9,
+        440.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_StreetLamp_BaseColor.png",
+      "Normal": "SM_StreetLamp_Normal.png",
+      "Roughness": "SM_StreetLamp_Roughness.png",
+      "Metallic": "SM_StreetLamp_Metallic.png"
+    },
+    "source": "Lamp"
+  },
+  "SM_PowerConsole": {
+    "faces": 25000,
+    "size_m": [
+      1.053,
+      1.287,
+      1.0
+    ],
+    "bounds_cm": [
+      [
+        -52.6,
+        -64.4,
+        0.0
+      ],
+      [
+        52.6,
+        64.4,
+        100.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_PowerConsole_BaseColor.png",
+      "Normal": "SM_PowerConsole_Normal.png",
+      "Roughness": "SM_PowerConsole_Roughness.png",
+      "Metallic": "SM_PowerConsole_Metallic.png"
+    },
+    "source": "Panel"
+  },
+  "SM_PopcornCart": {
+    "faces": 25000,
+    "size_m": [
+      0.818,
+      0.848,
+      1.7
+    ],
+    "bounds_cm": [
+      [
+        -40.9,
+        -42.4,
+        0.0
+      ],
+      [
+        40.9,
+        42.4,
+        170.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_PopcornCart_BaseColor.png",
+      "Normal": "SM_PopcornCart_Normal.png",
+      "Roughness": "SM_PopcornCart_Roughness.png",
+      "Metallic": "SM_PopcornCart_Metallic.png"
+    },
+    "source": "Popcorn"
+  },
+  "SM_FilmReelStand": {
+    "faces": 15000,
+    "size_m": [
+      0.144,
+      0.671,
+      0.55
+    ],
+    "bounds_cm": [
+      [
+        -7.2,
+        -33.6,
+        0.0
+      ],
+      [
+        7.2,
+        33.6,
+        55.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_FilmReelStand_BaseColor.png",
+      "Normal": "SM_FilmReelStand_Normal.png",
+      "Roughness": "SM_FilmReelStand_Roughness.png",
+      "Metallic": "SM_FilmReelStand_Metallic.png"
+    },
+    "source": "Reel"
+  },
+  "SM_SeatRow": {
+    "faces": 68330,
+    "size_m": [
+      0.818,
+      3.6,
+      1.0
+    ],
+    "bounds_cm": [
+      [
+        -40.9,
+        -180.0,
+        0.0
+      ],
+      [
+        40.9,
+        180.0,
+        100.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_SeatRow_BaseColor.png"
+    },
+    "source": "Seat"
+  },
+  "SM_Watcher": {
+    "faces": 30000,
+    "size_m": [
+      0.933,
+      1.025,
+      1.1
+    ],
+    "bounds_cm": [
+      [
+        -46.6,
+        -51.2,
+        -55.0
+      ],
+      [
+        46.6,
+        51.2,
+        55.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Watcher_BaseColor.png",
+      "Normal": "SM_Watcher_Normal.png",
+      "Roughness": "SM_Watcher_Roughness.png",
+      "Metallic": "SM_Watcher_Metallic.png",
+      "Emissive": "SM_Watcher_Emissive.png"
+    },
+    "source": "Sentinel"
+  },
+  "SM_ReelShelf": {
+    "faces": 9991,
+    "size_m": [
+      1.081,
+      1.347,
+      2.4
+    ],
+    "bounds_cm": [
+      [
+        -54.1,
+        -67.4,
+        0.0
+      ],
+      [
+        54.1,
+        67.4,
+        240.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_ReelShelf_BaseColor.png"
+    },
+    "source": "Shelf"
+  },
+  "SM_Speaker": {
+    "faces": 12000,
+    "size_m": [
+      0.669,
+      0.827,
+      1.15
+    ],
+    "bounds_cm": [
+      [
+        -33.5,
+        -41.4,
+        0.0
+      ],
+      [
+        33.5,
+        41.4,
+        115.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Speaker_BaseColor.png",
+      "Normal": "SM_Speaker_Normal.png",
+      "Roughness": "SM_Speaker_Roughness.png",
+      "Metallic": "SM_Speaker_Metallic.png"
+    },
+    "source": "Speaker"
+  },
+  "SM_Terminal": {
+    "faces": 20000,
+    "size_m": [
+      0.737,
+      0.775,
+      1.35
+    ],
+    "bounds_cm": [
+      [
+        -36.9,
+        -38.8,
+        0.0
+      ],
+      [
+        36.9,
+        38.8,
+        135.0
+      ]
+    ],
+    "textures": {
+      "BaseColor": "SM_Terminal_BaseColor.png"
+    },
+    "source": "Terminal"
+  }
+}
