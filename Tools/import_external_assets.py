@@ -27,7 +27,7 @@ KIT_ROOT = "/Game/TUC/Kit"
 SURF_DIR = KIT_DIR / "Surfaces"
 
 # Debe coincidir con IMPORT_VERSION de Content/Python/init_unreal.py.
-IMPORT_VERSION = "4"
+IMPORT_VERSION = "5"
 
 # UE 5.5+ importa FBX con Interchange, que ignora las opciones FbxImportUI (escala, esqueleto,
 # animaciones, materiales). Forzar el importador FBX clásico para que todo salga igual en 5.1–5.7.

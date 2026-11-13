@@ -100,3 +100,7 @@ HUD:
 - Botones con imagen (ratón, flechas o mando), pantalla ilustrada "¿Cómo se juega?" con tarjetas de Ivo, Nilo, el rombo y los vigilantes, prólogo ilustrado y pausa.
 - El texto del HUD vuelve a la fuente del motor (se veía invisible con la fuente Slate), ahora escalada a 1080p y con negrita.
 - Si faltan las imágenes, el menú se dibuja con texto (no queda en blanco).
+
+## 1.7 — ilustración del menú (13 nov 2026)
+- Fondo del menú, prólogo y "cómo jugar" con ilustración estilo animación generada con IA (Meshy, 18 créditos).
+- Retratos de Ivo y Nilo en "cómo jugar" tomados de la ilustración.

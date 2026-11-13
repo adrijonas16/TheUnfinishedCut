@@ -240,30 +240,43 @@ def vignette(img, strength=200):
     img.alpha_composite(layer)
 
 
+def keyart(name, blur=0, darken=0):
+    """Ilustración generada con IA (Meshy, Nano Banana Pro) escalada a 1920x1080."""
+    path = OUT / name
+    if not path.exists():
+        return None
+    img = Image.open(path).convert("RGBA").resize((W, H), Image.LANCZOS)
+    if blur:
+        img = img.filter(ImageFilter.GaussianBlur(blur))
+    if darken:
+        img.alpha_composite(Image.new("RGBA", img.size, (12, 6, 28, darken)))
+    return img
+
+
 # ───────────────────────── imágenes ─────────────────────────
 
 def make_menu_background():
-    img = night_background()
-    film_strip(img, 360, 50, x_start=820)
-    city_silhouette(img)
-    fog(img)
-    paw_trail(img, (700, 1040), (1180, 930), steps=8)
-    portrait(img, OUT / "ivo.png", (1380, 360, 1760, 1040), rim=(150, 220, 255))
-    portrait(img, OUT / "nilo.png", (1080, 700, 1420, 1040), rim=MINT)
-    vignette(img)
-    # panel izquierdo para el título y los botones
+    img = keyart("KeyArt_Menu.png")
+    if img is None:
+        img = night_background()
+        film_strip(img, 360, 50, x_start=820)
+        city_silhouette(img)
+        fog(img)
+    # degradado oscuro a la izquierda para el título y los botones
     panel = Image.new("RGBA", img.size, (0, 0, 0, 0))
     pd = ImageDraw.Draw(panel)
-    for x in range(0, 900):
-        a = int(170 * max(0.0, 1.0 - x / 900.0) ** 1.4)
-        pd.line((x, 0, x, H), fill=(10, 4, 24, a))
+    for x in range(0, 1000):
+        a = int(200 * max(0.0, 1.0 - x / 1000.0) ** 1.3)
+        pd.line((x, 0, x, H), fill=(10, 4, 26, a))
     img.alpha_composite(panel)
-    glow_text(img, (110, 70), "The", griffy(80), MOON, glow=(255, 200, 120), glow_radius=10)
-    glow_text(img, (100, 140), "Unfinished", griffy(150), MOON, glow=(255, 190, 110))
-    glow_text(img, (100, 300), "Cut", griffy(150), (255, 196, 110), glow=(255, 140, 60))
+    vignette(img, 150)
+    glow_text(img, (110, 60), "The", griffy(80), MOON, glow=(255, 200, 120), glow_radius=10)
+    glow_text(img, (100, 130), "Unfinished", griffy(150), MOON, glow=(255, 190, 110))
+    glow_text(img, (100, 290), "Cut", griffy(150), (255, 196, 110), glow=(255, 140, 60))
     d = ImageDraw.Draw(img)
-    d.text((132, 470), "Ivo + Nilo  ·  una aventura entre películas", font=fredoka(32, "SemiBold"), fill=LILAC)
-    paw(d, 104, 492, 20, MINT + (230,))
+    paw(d, 112, 482, 20, MINT + (230,))
+    d.text((140, 462), "Ivo + Nilo  ·  una aventura entre películas", font=fredoka(32, "SemiBold"), fill=LILAC,
+           stroke_width=3, stroke_fill=INK)
     img.convert("RGB").save(OUT / "T_UI_MenuBG.png")
 
 
@@ -285,12 +298,30 @@ def make_button(label, selected, name, width=560, height=84):
     img.save(OUT / f"{name}.png")
 
 
-def card(img, box, title, color, body, font_body, portrait_path=None, icon=None):
+def art_crop(region, size):
+    """Recorte redondeado de la ilustración del menú (para las tarjetas)."""
+    art = keyart("KeyArt_Menu.png")
+    if art is None:
+        return None
+    crop = art.crop(region)
+    crop.thumbnail(size, Image.LANCZOS)
+    mask = Image.new("L", crop.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, crop.width - 1, crop.height - 1), 22, fill=255)
+    crop.putalpha(mask)
+    return crop
+
+
+def card(img, box, title, color, body, font_body, portrait_path=None, icon=None, art=None):
     rounded_panel(img, box, (26, 16, 52, 238), outline=color + (200,), radius=30, width=4)
     d = ImageDraw.Draw(img)
     x0, y0, x1, y1 = box
     text_x = x0 + 34
-    if portrait_path:
+    if art is not None:
+        ay = y0 + (y1 - y0 - art.height) // 2
+        img.alpha_composite(art, (x0 + 20, ay))
+        ImageDraw.Draw(img).rounded_rectangle((x0 + 20, ay, x0 + 20 + art.width - 1, ay + art.height - 1), 22, outline=color + (255,), width=3)
+        text_x = x0 + 40 + art.width
+    elif portrait_path:
         portrait(img, portrait_path, (x0 + 14, y0 + 20, x0 + 250, y1 - 16), rim=color)
         text_x = x0 + 270
     if icon:
@@ -329,8 +360,7 @@ def keycap(d, x, y, label, w=None, color=(250, 240, 255)):
 
 
 def make_howto():
-    img = night_background(seed=8, moon=(1760, 120), moon_r=80)
-    fog(img, 820, 120)
+    img = keyart("KeyArt_Menu.png", blur=14, darken=150) or night_background(seed=8, moon=(1760, 120), moon_r=80)
     vignette(img, 160)
     glow_text(img, (W // 2, 70), "¿Cómo se juega?", griffy(96), MOON, glow=(255, 200, 120), anchor="ma")
     d = ImageDraw.Draw(img)
@@ -339,10 +369,10 @@ def make_howto():
     body = fredoka(29, "Medium")
     card(img, (90, 250, 945, 520), "IVO  ·  el humano", IVO,
          "Juegas en primera persona. Enciende consolas, terminales y proyectores: los objetos que brillan en CELESTE o VIOLETA son suyos.",
-         body, portrait_path=OUT / "ivo.png")
+         body, portrait_path=OUT / "ivo.png", art=art_crop((1500, 250, 1900, 650), (230, 230)))
     card(img, (975, 250, 1830, 520), "NILO  ·  el gato", NILO,
          "Cámara detrás del gato. Cabe por rejillas y ductos y recoge rollos de película: los objetos que brillan en VERDE son suyos.",
-         body, portrait_path=OUT / "nilo.png")
+         body, portrait_path=OUT / "nilo.png", art=art_crop((1300, 740, 1560, 1000), (230, 230)))
     card(img, (90, 550, 945, 820), "Sigue el rombo", (255, 205, 110),
          "Arriba a la izquierda verás el OBJETIVO, dónde está y quién lo hace. Un rombo marca el lugar con la distancia. Acércate y pulsa E.",
          body, icon=icon_marker)
@@ -362,9 +392,7 @@ def make_howto():
 
 
 def make_prologue():
-    img = night_background(seed=21, moon=(960, 230), moon_r=120)
-    film_strip(img, 1010, 18, color=(10, 6, 20, 200))
-    fog(img, 700, 170)
+    img = keyart("KeyArt_Alt.png", blur=6, darken=150) or night_background(seed=21, moon=(960, 230), moon_r=120)
     vignette(img, 220)
     glow_text(img, (W // 2, 90), "Corte 001 — final registrado", griffy(70), (255, 196, 110), glow=(255, 140, 60), anchor="ma")
     d = ImageDraw.Draw(img)
