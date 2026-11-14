@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26902/KLIz07R5l4JPZfme8bNT2_8jAF0CFn.png",
+      "content_type": "image/png",
+      "file_name": "KLIz07R5l4JPZfme8bNT2_8jAF0CFn.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691b/ZCpxrLS3-OSReRgSCwym6_4R2jEIq0.png",
+      "content_type": "image/png",
+      "file_name": "ZCpxrLS3-OSReRgSCwym6_4R2jEIq0.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "basecolor"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691b/NMAqvCM9v75Z0nXhVCcZt_PQ7buZvl.png",
+      "content_type": "image/png",
+      "file_name": "NMAqvCM9v75Z0nXhVCcZt_PQ7buZvl.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "normal"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691b/lnBxLGEQjKtJtsuY4wJjA_Al5ZJS54.png",
+      "content_type": "image/png",
+      "file_name": "lnBxLGEQjKtJtsuY4wJjA_Al5ZJS54.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "roughness"
+    }
+  ],
+  "seed": 4106,
+  "prompt": "Seamless tileable stylized low-poly game material: warm dark walnut wood planks for doors and crates, broad simplified grain, straight parallel boards. Clean hand-painted style, large simple shapes, restrained detail, cinematic mysterious abandoned cinema art direction. Flat orthographic material swatch only, uniform neutral lighting, no baked shadows or lights, no reflections, no objects, no perspective, no text, no photorealistic noise.",
+  "timings": {
+    "texture_generation": 9.378347154997755,
+    "pbr_prediction": 251.31717467800263
+  }
+}

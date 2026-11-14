@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26902/_RGzdX7enbmKiqNoi2OZC_GJtBAq3x.png",
+      "content_type": "image/png",
+      "file_name": "_RGzdX7enbmKiqNoi2OZC_GJtBAq3x.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691a/GROrlirSgsbuUgJ0J4zG0_uYCm5yU7.png",
+      "content_type": "image/png",
+      "file_name": "GROrlirSgsbuUgJ0J4zG0_uYCm5yU7.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "basecolor"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691a/pOSpkmpKDmqNJLXMGG_Sv_8W2Gxhjq.png",
+      "content_type": "image/png",
+      "file_name": "pOSpkmpKDmqNJLXMGG_Sv_8W2Gxhjq.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "normal"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691a/y52RQDdwnu9d9Tm91-iH6_43X1Jls6.png",
+      "content_type": "image/png",
+      "file_name": "y52RQDdwnu9d9Tm91-iH6_43X1Jls6.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "roughness"
+    }
+  ],
+  "seed": 4105,
+  "prompt": "Seamless tileable stylized low-poly game material: deep wine red vintage cinema carpet, sparse subtle gold geometric diamonds, flat woven fabric. Clean hand-painted style, large simple shapes, restrained detail, cinematic mysterious abandoned cinema art direction. Flat orthographic material swatch only, uniform neutral lighting, no baked shadows or lights, no reflections, no objects, no perspective, no text, no photorealistic noise.",
+  "timings": {
+    "texture_generation": 6.607491063998168,
+    "pbr_prediction": 243.49312513100085
+  }
+}

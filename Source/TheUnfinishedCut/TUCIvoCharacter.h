@@ -9,6 +9,7 @@ class USpotLightComponent;
 class UAnimSequence;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
+class USceneComponent;
 
 UCLASS()
 class THEUNFINISHEDCUT_API ATUCIvoCharacter : public ATUCCharacterBase
@@ -39,6 +40,38 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
     TObjectPtr<UStaticMeshComponent> FlashlightPlaceholder;
+
+    /** Mano y linterna low-poly visibles en primera persona cuando se juega como Ivo (como en el mockup). */
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<UStaticMeshComponent> FPHandMesh;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<UStaticMeshComponent> FPFlashlightBody;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<UStaticMeshComponent> FPFlashlightHead;
+
+    /** Rig procedural low-poly articulado de Ivo (caminar: piernas, zapatos, brazos, torso y cabeza). */
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> IvoRigRoot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> LeftLegPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> RightLegPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> LeftArmPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> RightArmPivot;
+
+    UPROPERTY()
+    TArray<TObjectPtr<UStaticMeshComponent>> IvoRigParts;
+
+    float WalkCyclePhase = 0.0f;
+    void UpdateProceduralWalk(float DeltaSeconds);
 
     /** Personaje realista animado de Meshy (esqueleto UE5 Mannequin: caminar y correr). */
     UPROPERTY(VisibleAnywhere, Category="TUC|Visual")

@@ -979,7 +979,7 @@ void ATUCHUD::DrawObjectiveMarker(const ATUCInteractionActor* Target, const ATUC
     PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
     const FVector Local = ViewRotation.UnrotateVector(MarkerWorld - ViewLocation);
 
-    FVector2D Screen;
+    FVector2D Screen = FVector2D::ZeroVector;
     const float EdgeMargin = 90.0f * UIScale;
     const bool bProjected = Local.X > 1.0f && PlayerController->ProjectWorldLocationToScreen(MarkerWorld, Screen, true);
     const bool bOnScreen = bProjected && Screen.X > EdgeMargin && Screen.X < W - EdgeMargin && Screen.Y > EdgeMargin && Screen.Y < H - EdgeMargin;

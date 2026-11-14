@@ -10,7 +10,7 @@ import unreal
 
 _MARKER = "/Game/TUC/Kit/Meshes/SM_Watcher"
 # Subir este número obliga a reimportar al abrir (p. ej. tras un git pull con assets nuevos).
-IMPORT_VERSION = "8"
+IMPORT_VERSION = "9"
 _handle = None
 
 
@@ -39,6 +39,8 @@ def _on_tick(_delta):
         return
     unreal.unregister_slate_post_tick_callback(_handle)
     _handle = None
+    if not hasattr(unreal, "EditorAssetLibrary"):
+        return
     if unreal.EditorAssetLibrary.does_asset_exist(_MARKER) and _imported_version() == IMPORT_VERSION:
         return
     unreal.log("TUC: importando/actualizando los assets del juego (2-4 minutos)...")

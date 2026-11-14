@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26902/ey5CElX8Xb8CB_Txr8746_ZLsEHNZy.png",
+      "content_type": "image/png",
+      "file_name": "ey5CElX8Xb8CB_Txr8746_ZLsEHNZy.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26918/byuw-XTyJcfx7VI3z9kDA_wuEuLbdl.png",
+      "content_type": "image/png",
+      "file_name": "byuw-XTyJcfx7VI3z9kDA_wuEuLbdl.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "basecolor"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26918/g5GN3EcwZooC3SAEle5pr_EHsWXWz6.png",
+      "content_type": "image/png",
+      "file_name": "g5GN3EcwZooC3SAEle5pr_EHsWXWz6.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "normal"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26918/-F012J8VpFMjIHIxEdh2O_IUqkVawg.png",
+      "content_type": "image/png",
+      "file_name": "-F012J8VpFMjIHIxEdh2O_IUqkVawg.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "roughness"
+    }
+  ],
+  "seed": 4102,
+  "prompt": "Seamless tileable stylized low-poly game material: large blue gray concrete sidewalk slabs, simple rectangular grid. Clean hand-painted style, large simple shapes, restrained detail, cinematic mysterious abandoned cinema art direction. Flat orthographic material swatch only, uniform neutral lighting, no baked shadows or lights, no reflections, no objects, no perspective, no text, no photorealistic noise.",
+  "timings": {
+    "texture_generation": 7.6457144470005005,
+    "pbr_prediction": 232.20619719800015
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26902/CzyU7hgTHxp3aF9OOJIck_IyPpXtIC.png",
+      "content_type": "image/png",
+      "file_name": "CzyU7hgTHxp3aF9OOJIck_IyPpXtIC.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691a/rrYlSqYaXgSscLhd5SGX1_1rspKpfF.png",
+      "content_type": "image/png",
+      "file_name": "rrYlSqYaXgSscLhd5SGX1_1rspKpfF.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "basecolor"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691a/v4LMuNmV8qWkptEZgNmRF_pfQxp3NY.png",
+      "content_type": "image/png",
+      "file_name": "v4LMuNmV8qWkptEZgNmRF_pfQxp3NY.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "normal"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab2691a/h4kFutwByhWv93HTeLeL1_4YAzGm93.png",
+      "content_type": "image/png",
+      "file_name": "h4kFutwByhWv93HTeLeL1_4YAzGm93.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "roughness"
+    }
+  ],
+  "seed": 4104,
+  "prompt": "Seamless tileable stylized low-poly game material: dark oxblood burgundy painted plaster cinema facade, minimal wear, matte. Clean hand-painted style, large simple shapes, restrained detail, cinematic mysterious abandoned cinema art direction. Flat orthographic material swatch only, uniform neutral lighting, no baked shadows or lights, no reflections, no objects, no perspective, no text, no photorealistic noise.",
+  "timings": {
+    "texture_generation": 8.000764684002206,
+    "pbr_prediction": 248.05588777699813
+  }
+}

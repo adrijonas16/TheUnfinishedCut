@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26902/2xnF4H9NyAniAR9BVC-xo_Sa2xJTrl.png",
+      "content_type": "image/png",
+      "file_name": "2xnF4H9NyAniAR9BVC-xo_Sa2xJTrl.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26919/1cnYXzy0JvdtXyIYhCj6D_pZs5rwvg.png",
+      "content_type": "image/png",
+      "file_name": "1cnYXzy0JvdtXyIYhCj6D_pZs5rwvg.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "basecolor"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26919/pcUeeDTtkgVP8Kxnm7STA_jevX2FKI.png",
+      "content_type": "image/png",
+      "file_name": "pcUeeDTtkgVP8Kxnm7STA_jevX2FKI.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "normal"
+    },
+    {
+      "url": "https://v3b.fal.media/files/b/0ab26919/3t2tsjtpTLXzrGGE5BM4c_GqIXE2bI.png",
+      "content_type": "image/png",
+      "file_name": "3t2tsjtpTLXzrGGE5BM4c_GqIXE2bI.png",
+      "file_size": null,
+      "width": 1024,
+      "height": 1024,
+      "map_type": "roughness"
+    }
+  ],
+  "seed": 4101,
+  "prompt": "Seamless tileable stylized low-poly game material: dark blue charcoal asphalt road, broad subtle surface variation, no road markings. Clean hand-painted style, large simple shapes, restrained detail, cinematic mysterious abandoned cinema art direction. Flat orthographic material swatch only, uniform neutral lighting, no baked shadows or lights, no reflections, no objects, no perspective, no text, no photorealistic noise.",
+  "timings": {
+    "texture_generation": 8.453737404001004,
+    "pbr_prediction": 237.75124479700025
+  }
+}

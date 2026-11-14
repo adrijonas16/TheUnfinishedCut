@@ -9,6 +9,7 @@ class UCameraComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
+class USceneComponent;
 
 UCLASS()
 class THEUNFINISHEDCUT_API ATUCNiloCharacter : public ATUCCharacterBase
@@ -52,6 +53,34 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
     TObjectPtr<UStaticMeshComponent> PlaceholderCollar;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<UStaticMeshComponent> PlaceholderBell;
+
+    /** Rig procedural low-poly articulado de Nilo (4 patas, cola y cuerpo con ciclo de caminar felino). */
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> NiloRigRoot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> LegFLPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> LegFRPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> LegBLPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> LegBRPivot;
+
+    UPROPERTY(VisibleAnywhere, Category="TUC|Visual")
+    TObjectPtr<USceneComponent> TailPivot;
+
+    UPROPERTY()
+    TArray<TObjectPtr<UStaticMeshComponent>> NiloRigParts;
+
+    float CatWalkPhase = 0.0f;
+    void UpdateProceduralCatWalk(float DeltaSeconds);
 
     UPROPERTY(VisibleAnywhere, Category="TUC|Camera")
     TObjectPtr<USpringArmComponent> CameraBoom;

@@ -1,0 +1,19 @@
+{
+  "maps": [
+    "basecolor",
+    "normal",
+    "roughness"
+  ],
+  "image_size": {
+    "height": 1024,
+    "width": 1024
+  },
+  "output_format": "png",
+  "enable_prompt_expansion": false,
+  "num_inference_steps": 8,
+  "upscale_factor": 0,
+  "seed": 4103,
+  "num_images": 1,
+  "prompt": "Seamless tileable stylized low-poly game material: muted burgundy red brick cinema wall, large simplified bricks, narrow dark mortar. Clean hand-painted style, large simple shapes, restrained detail, cinematic mysterious abandoned cinema art direction. Flat orthographic material swatch only, uniform neutral lighting, no baked shadows or lights, no reflections, no objects, no perspective, no text, no photorealistic noise.",
+  "tiling_mode": "both"
+}

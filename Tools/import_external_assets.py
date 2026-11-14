@@ -17,7 +17,7 @@ from pathlib import Path
 import unreal
 
 
-PROJECT_DIR = Path(unreal.Paths.project_dir())
+PROJECT_DIR = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir()))
 ASSET_TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
 EAL = unreal.EditorAssetLibrary
 MEL = unreal.MaterialEditingLibrary
@@ -27,7 +27,7 @@ KIT_ROOT = "/Game/TUC/Kit"
 SURF_DIR = KIT_DIR / "Surfaces"
 
 # Debe coincidir con IMPORT_VERSION de Content/Python/init_unreal.py.
-IMPORT_VERSION = "8"
+IMPORT_VERSION = "9"
 
 # UE 5.5+ importa FBX con Interchange, que ignora las opciones FbxImportUI (escala, esqueleto,
 # animaciones, materiales). Forzar el importador FBX clásico para que todo salga igual en 5.1–5.7.
@@ -186,6 +186,8 @@ def build_master_material(white_texture):
     white_texture = white_texture or engine_texture()
 
     material = ASSET_TOOLS.create_asset("M_TUC_Master", f"{KIT_ROOT}/Materials", unreal.Material, unreal.MaterialFactoryNew())
+    material.set_editor_property("used_with_instanced_static_meshes", True)
+    material.set_editor_property("used_with_skeletal_mesh", True)
 
     tex = MEL.create_material_expression(material, unreal.MaterialExpressionTextureSampleParameter2D, -900, -100)
     tex.set_editor_property("parameter_name", "BaseTex")
@@ -226,6 +228,8 @@ def build_surface_master(defaults):
     if EAL.does_asset_exist(path):
         EAL.delete_asset(path)
     material = ASSET_TOOLS.create_asset("M_TUC_Surface", f"{KIT_ROOT}/Materials", unreal.Material, unreal.MaterialFactoryNew())
+    material.set_editor_property("used_with_instanced_static_meshes", True)
+    material.set_editor_property("used_with_skeletal_mesh", True)
 
     def param(name, texture, sampler, x, y):
         node = MEL.create_material_expression(material, unreal.MaterialExpressionTextureSampleParameter2D, x, y)
@@ -392,6 +396,8 @@ def build_pbr_material(destination, name, textures):
     if EAL.does_asset_exist(path):
         EAL.delete_asset(path)
     material = ASSET_TOOLS.create_asset(name, destination, unreal.Material, unreal.MaterialFactoryNew())
+    material.set_editor_property("used_with_instanced_static_meshes", True)
+    material.set_editor_property("used_with_skeletal_mesh", True)
     if textures.get("base"):
         node = add_texture_node(material, textures["base"], -700, -300, unreal.MaterialSamplerType.SAMPLERTYPE_COLOR)
         MEL.connect_material_property(node, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
@@ -487,11 +493,21 @@ def import_ivo():
 
     stem = fbx.stem
     folder = fbx.parent
+    # En Windows sin LongPathsEnabled, rutas >260 chars fallan en open/stat: usar prefijo \\?\ y copiar con nombre corto.
+    import shutil
+    short_dir = PROJECT_DIR / "Intermediate" / "IvoTexTmp"
+    short_dir.mkdir(parents=True, exist_ok=True)
+    def _stage_ivo_tex(suffix, short_name):
+        raw = str((folder / f"{stem}{suffix}.png").resolve())
+        long_src = "\\\\?\\" + raw if not raw.startswith("\\\\?\\") else raw
+        dst = short_dir / f"{short_name}.png"
+        shutil.copyfile(long_src, str(dst))
+        return dst
     textures = {
-        "base": import_texture(folder / f"{stem}.png", f"{IVO_DEST}/Textures"),
-        "normal": import_texture(folder / f"{stem}_normal.png", f"{IVO_DEST}/Textures", "normal"),
-        "roughness": import_texture(folder / f"{stem}_roughness.png", f"{IVO_DEST}/Textures", "mask"),
-        "metallic": import_texture(folder / f"{stem}_metallic.png", f"{IVO_DEST}/Textures", "mask"),
+        "base": import_texture(short_dir / "T_Ivo_Stylized_BaseColor.png" if (short_dir / "T_Ivo_Stylized_BaseColor.png").exists() else _stage_ivo_tex("", "T_Ivo_BaseColor"), f"{IVO_DEST}/Textures"),
+        "normal": import_texture(_stage_ivo_tex("_normal", "T_Ivo_Normal"), f"{IVO_DEST}/Textures", "normal"),
+        "roughness": import_texture(short_dir / "T_Ivo_Stylized_Roughness.png" if (short_dir / "T_Ivo_Stylized_Roughness.png").exists() else _stage_ivo_tex("_roughness", "T_Ivo_Roughness"), f"{IVO_DEST}/Textures", "mask"),
+        "metallic": import_texture(short_dir / "T_Ivo_Stylized_Metallic.png" if (short_dir / "T_Ivo_Stylized_Metallic.png").exists() else _stage_ivo_tex("_metallic", "T_Ivo_Metallic"), f"{IVO_DEST}/Textures", "mask"),
     }
     material = build_pbr_material(IVO_DEST, "M_Ivo_PBR", textures)
     slots = skeletal.get_editor_property("materials")

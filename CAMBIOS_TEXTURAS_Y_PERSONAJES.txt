@@ -1,0 +1,91 @@
+================================================================================
+DOCUMENTACION DE CAMBIOS - THE UNFINISHED CUT (EPIC AI MEGAJAM 2026)
+Fecha: 14 de noviembre de 2026
+Repositorio: https://github.com/adrijonas16/TheUnfinishedCut
+Rama: develop / main
+Motor: Unreal Engine 5.6
+================================================================================
+
+1. CORRECCION DE MATERIALES EN INSTANCED STATIC MESHES Y SKELETAL MESHES
+--------------------------------------------------------------------------------
+- Archivo modificado: Tools/import_external_assets.py
+- Problema detectado:
+  En Unreal Engine 5.6, todos los materiales creados dinamicamente desde Python
+  (M_TUC_Master, M_TUC_Surface, M_Ivo_PBR, M_Nilo_PBR y los materiales de props
+  M_SM_*) tenian desactivados los flags `bUsedWithInstancedStaticMeshes` y
+  `bUsedWithSkeletalMesh`. Como el constructor de niveles (ATUCBlockoutBuilder)
+  instancia paredes, pisos y props mediante `UInstancedStaticMeshComponent`,
+  Unreal descartaba los shaders en tiempo de ejecucion y mostraba el material
+  gris de cuadros por defecto (`WorldGridMaterial`).
+- Solucion:
+  Se activaron explicitamente `used_with_instanced_static_meshes = True` y
+  `used_with_skeletal_mesh = True` en `build_master_material()`,
+  `build_surface_master()` y `build_pbr_material()`.
+- Adicionalmente, se corrigio el limite `MAX_PATH` (>260 caracteres en Windows)
+  al copiar las texturas de `Ivo_Animated` usando rutas extendidas (`\\?\`) y
+  un directorio temporal corto (`Intermediate/IvoTexTmp`).
+- Se incremento `IMPORT_VERSION = "9"` en `Tools/import_external_assets.py` y
+  `Content/Python/init_unreal.py` para que cualquier clon nuevo actualice los
+  materiales automaticamente al abrir el editor.
+
+2. INTEGRACION DE TEXTURAS ESTILIZADAS LOW-POLY (FAL.AI PATINA + KIT PBR)
+--------------------------------------------------------------------------------
+- Archivos modificados / agregados:
+  * ExternalAssets/TUC_Kit/Surfaces/surfaces.json
+  * ExternalAssets/TUC_Kit/Surfaces/M_*_{BaseColor,Normal,Roughness}_fal.png
+  * ExternalAssets/Fal_StyleStudy/*_result.json
+- Detalle:
+  Se descargaron e integraron los mapas PBR (`BaseColor`, `Normal`, `Roughness`
+  a 1024x1024) generados con `fal-ai/patina` para las superficies del juego y se
+  completaron los mapas estilizados low-poly sin ruido fotorrealista para los
+  4 capitulos:
+  * Capitulo 1 (Calle y Cine): `M_Asphalt`, `M_Sidewalk`, `M_Brick`,
+    `M_CinemaPanel`, `M_Carpet`, `M_Wood`.
+  * Capitulo 2 (Anos 80 / Arcade): `M_Checker` (damero retro limpio).
+  * Capitulo 3 (Futuro): `M_MetalPanel` (paneles sci-fi estilizados).
+  * Capitulo 4 (Archivo de los Ecos): `M_StoneTile`, `M_StoneBlock`.
+
+3. REDISENO LOW-POLY Y ANIMACION PROCEDURAL ARTICULADA DE IVO Y NILO
+--------------------------------------------------------------------------------
+- Archivos modificados:
+  * Source/TheUnfinishedCut/TUCIvoCharacter.h
+  * Source/TheUnfinishedCut/TUCIvoCharacter.cpp
+  * Source/TheUnfinishedCut/TUCNiloCharacter.h
+  * Source/TheUnfinishedCut/TUCNiloCharacter.cpp
+  * ExternalAssets/Meshy/Community/Cat/T_Nilo_BaseColor.png
+  * ExternalAssets/Meshy/Community/Cat/T_Nilo_Stylized_BaseColor.png
+- Detalle en Ivo (`ATUCIvoCharacter`):
+  * Se reemplazo el modelo estatico/antiguo por un rig low-poly articulado fiel
+    al mockup oficial: chaqueta marron (`M_Jacket`), camisa azul (`M_Shirt`),
+    jeans azul oscuro (`M_Jeans`), zapatos negros (`M_Black`), piel clara
+    (`M_Skin`) y cabello castano (`M_Hair`).
+  * En primera persona (cuando el jugador controla a Ivo), se muestra su mano
+    derecha low-poly sosteniendo la linterna (`FPHandMesh`, `FPFlashlightBody`,
+    `FPFlashlightHead`) en la esquina inferior derecha de la camara, con el
+    foco `Flashlight` adelantado para iluminar la escena sin encandilar la mano.
+  * En tercera persona (cuando el jugador controla a Nilo), se muestra el cuerpo
+    completo de Ivo con animacion procedural de caminata: pivotes en cadera y
+    hombros (`LeftLegPivot`, `RightLegPivot`, `LeftArmPivot`, `RightArmPivot`)
+    que oscilan piernas, zapatos y brazos en contrafase segun la velocidad real
+    del personaje y regresan suavemente a reposo al detenerse.
+- Detalle en Nilo (`ATUCNiloCharacter`):
+  * Se construyo el rig low-poly articulado de Nilo fiel al mockup: gato
+    esmoquin negro (`M_CatBlack`) con pecho, hocico, punta de la cola y patas
+    delanteras blancas (`M_CatWhite`), nariz e interior de orejas rosados
+    (`M_CatPink`), ojos ambar (`M_CatEye`), collar rojo (`M_Collar`) y
+    campanilla dorada (`M_Gold`), orientado hacia `+X`.
+  * Animacion procedural felina en las 4 patas (`LegFLPivot`, `LegFRPivot`,
+    `LegBLPivot`, `LegBRPivot`) con paso diagonal sincronizado con la velocidad
+    de movimiento y balanceo continuo de la cola (`TailPivot`).
+
+4. COMPATIBILIDAD CON UNREAL ENGINE 5.6 Y SCRIPTS DE EJECUCION RAPIDA
+--------------------------------------------------------------------------------
+- Archivos modificados / agregados:
+  * TheUnfinishedCut.uproject (EngineAssociation ajustado a "5.6")
+  * Content/Python/init_unreal.py (guardia `hasattr(unreal, "EditorAssetLibrary")`
+    para ejecucion en modo `-game` sin errores)
+  * Source/TheUnfinishedCut/TUCHUD.cpp (inicializacion explicita de `FVector2D
+    Screen = FVector2D::ZeroVector` para evitar warning C4701 de MSVC 14.44)
+  * JUGAR_TUC.bat (lanzador directo del juego en ventana 1600x900)
+  * ABRIR_EDITOR_TUC.bat (lanzador directo del proyecto en Unreal Editor 5.6)
+================================================================================
